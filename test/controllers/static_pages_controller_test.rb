@@ -9,8 +9,10 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
 
   # 1
 
-  test
-    "should get root" do get FILL_IN assert_response FILL_IN
+  test "should get root"
+  do
+    get FILL_IN
+    assert_response FILL_IN
   end
 
   test "should get home" do
