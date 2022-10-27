@@ -4,32 +4,13 @@
     <title><%= yield(:title) %> | Ruby on Rails Tutorial Sample App</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= stylesheet_link_tag    'application', media: 'all',
+                               'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag    'application',
+                               'data-turbolinks-track': 'reload' %>
   </head>
 
   <body>
     <%= yield %>
   </body>
 </html>
-
-<%
-=begin%>
-<%= yield %>:このコードは、各ページの内容をレイアウトに挿入するためのものです。
-ここでは、この コードの詳細な動作を正確に理解することは重要ではありません。
-レイアウトを使う際に、/static_pages/home にアクセスすると home.html.erb の内容が、
-HTML に変換され、 <%= yield %>の位置に挿入される、ということになります。
-<%
-=end%>
-
-<%
-=begin%>
- この<%= csrf_meta_tags %>以下のERB は、スタイルシートとJavaScriptを、
-ページ内にインクルードする(=含める)た めのものです。
-スタイルシートと JavaScript は、Asset Pipeline(5.2.1)の一部であり、
-クロスサイトスクリプティング攻撃を緩和するコンテンツセキュリティポリシー(Content Security Policy: CSP)を実装するcsp_meta_tagと、
-クロスサイトリクエストフォージェリー(Cross-Site Request Forgery: CSRF)攻撃を緩和するcsrf_meta_tagsも含みます。
-(こうしたセキュリティ対策を開発者が気にしなくて済む点は、
-Rails のような長 年実績を積んでいるフレームワークを使う大きなメリットです)。 
-<%
-=end%>
