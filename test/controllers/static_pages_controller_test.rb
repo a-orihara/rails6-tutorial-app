@@ -6,14 +6,12 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     @base_title = "Ruby on Rails Tutorial Sample App"
   end
 
-
   # 1
-
-  test "should get root"
-  do
-    get FILL_IN
-    assert_response FILL_IN
-  end
+  # test "should get root"
+  # do
+  #   get FILL_IN
+  #   assert_response FILL_IN
+  # end
 
   test "should get home" do
     # アクションを get して正常 に動作することを確認
@@ -38,4 +36,6 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
 
 end
 
+# 1
 # home、helpアクションに合わせて自動生成
+# このtestメソッドは文字列(説明文)とブロックを引数にとり、テストが実行されるときにブロック内の文が実行される.
