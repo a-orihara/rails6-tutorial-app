@@ -4,6 +4,8 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.6'
 
 gem 'rails',      '6.0.4'
+# 1
+gem 'bootstrap-sass', '3.4.1'
 gem 'puma',       '4.3.6'
 gem 'sass-rails', '5.1.0'
 gem 'webpacker',  '4.0.7'
@@ -40,3 +42,9 @@ end
 
 # Windows ではタイムゾーン情報用の tzinfo-data gem を含める必要があります
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+# 1
+# Bootstrap フレームワークでは、動的なスタイルシートを生成するために LESS CSS 言語を使っていますが、
+# Rails の Asset Pipeline はデフォルトでは(LESS と非常によく似た)Sass 言語をサポートします(5.2)。
+# そのため、bootstrap-sass は、LESS を Sass へ変換し、
+# 必要な Bootstrap ファイルを現在のアプリケーションですべて利用できるようにします。
