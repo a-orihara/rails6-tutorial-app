@@ -1,15 +1,47 @@
 /*
  * This is a manifest file that'll be compiled into application.css, which will include all the files
  * listed below.
+ * [これは、application.cssにコンパイルされるマニフェストファイルで、以下のすべてのファイルが
+ *  含まれます。]
  *
  * Any CSS and SCSS file within this directory, lib/assets/stylesheets, or any plugin's
  * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ * [このディレクトリ、lib/assets/stylesheets、またはプラグインの vendor/assets/stylesheets
+ *  ディレクトリ内の CSS および SCSS ファイルは、相対パスでここから参照することが可能です。]
  *
  * You're free to add application-wide styles to this file and they'll appear at the bottom of the
  * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
  * files in this directory. Styles in this file should be added after the last require_* statement.
  * It is generally better to create a new file per style scope.
+ * [このファイルにアプリケーション全体のスタイルを自由に追加することができ、
+ *  それらはコンパイルされたファイルの一番下に表示されるので、ここで追加したスタイルは、
+ *  このディレクトリ内の他のCSS/SCSSファイルで定義されたスタイルよりも優先されます。
+ *  このファイルのスタイルは、最後のrequire_*文の後に追加する必要があります。一般に、
+ *  スタイルスコープごとに新しいファイルを作成する方がよいでしょう。]
  *
+ * 下記の部分は、 Sprockets が適切なファイルを読み込むために使われます。
+ * app/assets/stylesheets ディレクトリ(サブディレクトリを含む)中のすべての CSS ファイルが、
+ * アプリケーション CSS に含まれるようにしています。
  *= require_tree .
+ * CSS の読み込みシーケンスの中で、application.css 自身もその対象に含めています。
  *= require_self
  */
+
+ /* アセットディレクトリ
+ Rails のアセットパイプラインでは、静的ファイルを目的別に分類する、標準的な3つのディレクトリが使われています。
+ • app/assets: 現在のアプリケーション固有のアセット
+ • lib/assets: あなたの開発チームによって作成されたライブラリ用のアセット
+ • vendor/assets: サードパーティのアセット(デフォルトでは存在しません)
+ これらのディレクトリには、2 つのアセットクラス用のサブディレクトリがあります。
+ 例 えば app/assets の場合、次のような画像用と CSS 用のサブディレクトリがあります。 */
+
+ /* マニフェストファイル
+ 静的ファイル(アセット)を上記のアセットディレクトリへそれぞれ配置すれば、マニフェストファイルを使って、
+ それらをどのように 1 つのファイルにまとめるのかを Rails に指示すること ができます。
+ なお、実際にアセットをまとめる処理を行うのは Sprockets という gem で す。
+ また、マニフェストファイルは CSS と JavaScript には適用されますが、
+ 画像ファイ ルには適用されません。
+ このファイルはアプリケーションの CSS用マニフェストファイルです。
+ Rails には実用的なデフォルトのマニフェストファイルが付属しているので、
+ Rails チュートリアルでは変更を加える必要がありませんが、もし必要な場合は、Rails ガイド
+ の「アセットパイプライン」で詳細な情報を参照できます。 */
