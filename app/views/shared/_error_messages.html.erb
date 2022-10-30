@@ -1,0 +1,24 @@
+<% if @user.errors.any? %>
+  <div id="error_explanation">
+
+    <div class="alert alert-danger">
+      The form contains <%= pluralize(@user.errors.count, "error") %>.
+    </div>
+
+    <ul>
+    <% @user.errors.full_messages.each do |msg| %>
+      <li><%= msg %></li>
+    <% end %>
+    </ul>
+
+  </div>
+<% end %>
+
+<%#
+@パーシャルによって、Rails と Ruby には、Rails エラーオブジェクト用の 2 つのメソッド を含む多くの
+成果物が導入されました。最初は count メソッドを紹介します。これはエラーの数を返します。
+エラーメッセージはモデルの検証時に生成される
+
+@pluralize の最初の引数に整数が与えられると、それに基づいて 2 番目の引数の英単語 を複数形に変更
+したものを返します。
+%>

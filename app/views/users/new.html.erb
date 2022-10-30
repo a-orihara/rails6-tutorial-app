@@ -1,3 +1,67 @@
+
+
 <% provide(:title, 'Sign up') %>
 <h1>Sign up</h1>
-<p>This will be a signup page for new users.</p>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%# 1 %>
+    <%= form_with(model: @user, local: true) do |f| %>
+      <%= render 'shared/error_messages' %>
+      <%= f.label :name %>
+      <%= f.text_field :name, class: 'form-control' %>
+      <%= f.label :email %>
+      <%= f.email_field :email, class: 'form-control' %>
+      <%= f.label :password %>
+      <%= f.password_field :password, class: 'form-control' %>
+      <%= f.label :password_confirmation, "Confirmation" %>
+      <%= f.password_field :password_confirmation, class: 'form-control' %>
+      <%= f.submit "Create my account", class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</div>
+
+
+<%# 1
+ユーザー登録ページで重要な要素は、ユーザー登録に不可欠な情報を入力するフォームです。
+Rails で form_with ヘルパーメソッドを使います。このメソッドは Active Record の
+オブジェクトを取り込み、そのオブジェクトの属性を使ってフォームを構築します。
+コントローラーのnew アクションにform_with の引数で必要となるUser オブジェクトを作成して使います。
+
+@doキーワードは、form_with が 1 つの変数を持つブロックを取ることを表します。この変数fは
+“form” の f です。ここでハッシュ引数 local: true が存在していることにご注目ください。
+form_with はデフォルトで “remote” XHR request を送信しますが、ここではエラーメッセージを
+ほぼ確実に表示するために通常の “local” フォームリクエストを送信したいのです
+
+@通常、Railsヘルパーを使っている場合、実装の詳細について知っておく必要はありませんが、この
+fオブジェクトは、HTMLフォーム要素(テキストフィールド、ラジオボタン、パスワード フィールドなど)に
+対応するメソッドが呼び出されると、@user の属性を設定するために特別に設計されたHTMLを返します。
+つまり、Userモデルのname属性を設定する、ラベル付きテキストフィールド要素を作成するのに必要な
+HTMLを作成します。
+<form>タグにおける”action”は送信先を指定するためのもの
+<form accept-charset="UTF-8" action="/users" class="new_user" id="new_user" method="post">
+  <input name="authenticity_token" type="hidden" value="NNb6+J/j46LcrgYUC60wQ2titMuJQ5lLqyAbnbAUkdo="/>
+
+  <label for="user_name">Name</label>
+  <input id="user_name" name="user[name]" type="text" />
+</form>
+
+*Railsはinputタグの属性nameを使って、初期化したハッシュを(params 変数経由で)構成します。 
+このハッシュは、入力された値に基づいてユーザーを作成するときに使われます。
+＊<form>タグにおける”action”は送信先を指定するためのも
+
+@Railsform_withヘルパーメソッドのformタグを作成するときに、@user オブジェクトを使います。
+すべての Ruby オブジェクトは自分のクラスを知っているので、Rails は@user のクラスがUser で
+あることを認識します。また、@user は 新しいユーザーなので、 Rails は post メソッドを使って
+フォームを構築すべきだと判断 します。なお、新しいオブジェクトを作成するために必要な HTTP リク
+エストは POST なので、このメソッドは RESTful アーキテクチャとして正しいリクエストになります。
+
+@  <input name="authenticity_token" type="hidden" value="NNb6+J/j46LcrgYUC60wQ2titMuJQ5lLqyAbnbAUkdo="/>
+このコードはブラウザ上では何も表示しませんが、Rails の内部で使われる特別なコードです。
+Cross-Site Request Forgery(CSRF)と呼 ばれる攻撃を阻止するために信頼できるトークンを
+含めたりしています
+
+@ここでは、’shared/error_messages’ というパーシャルを render(描画)している 点に注目して
+ください。Rails 全般の慣習として、複数のビューで使われるパーシャルは 専用のディレクトリ「shared」
+によく置かれます。
+%>
