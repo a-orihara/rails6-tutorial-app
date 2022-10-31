@@ -19,9 +19,9 @@ class UsersController < ApplicationController
     # ↑この書き方は今ではNG:@user = User.new(params[:user])
     if @user.save
       # 登録完了後に表示 されるページにメッセージを表示。Railsではflash という特殊な変数を使用。
-      # flash 変数に代入したメッセージは、リダイレクトした直後のページで表示できるよう になります。
+      # ウェルカムメッセージ。flash 変数に代入したメッセージは、リダイレクトした直後のページで表示できるよう になります。
       flash[:success] = "Welcome to the Sample App!"
-      # 5 redirect_to user_url(@user)と等価。/user
+      # 5 redirect_to user_url(@user)と等価。/users
       redirect_to @user
     # 保存の成功をここで扱う。
     else
@@ -98,3 +98,15 @@ end
 # redirect_to user_url(@user)
 # これはredirect_to @userというコードからuser_url(@user) といったコードを実行したいという
 # ことを、Rails が推察してくれた結果になります。
+#/users/:idへのリダイレクトを、相対パスで指定する(1)
+# redirect_to("/users/#{@user.id}")
+#/users/:idへのリダイレクトを、絶対パスで指定する(2)
+# redirect_to("https://228e5b796b37495aa0c17e02856dccfa.vfs.cloud9.us-east-2.amazonaws.com/users/#{@user.id}")
+#/users/:idへのリダイレクトを、user_url(id)ヘルパーを使って、絶対パスで指定する(3)
+# redirect_to(user_url(@user.id))
+#リンクのパスとしてモデルオブジェクトが渡されると自動でidにリンクされるので、.idを省略する(4)
+# redirect_to(user_url(@user))
+#_urlヘルパーは、省略できる(5)
+# redirect_to(@user)
+#Rubyでは、()は省略できる(6)
+# redirect_to @user
