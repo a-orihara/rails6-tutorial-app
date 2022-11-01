@@ -7,7 +7,6 @@ class User < ApplicationRecord
   # validatesはメソッド。presence: true という引数は、要素が1つのオプションハッシュです。
   # メソッドの最後の引数としてハッシュを渡す場合、波カッコを付けなくても問題ありません。validates(:name, presence: true)。
   validates :name, presence: true, length: { maximum: 50 }
-
   # 定数です。大文字で始まる名前は Ruby では定数を意味します。
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
 
@@ -16,12 +15,17 @@ class User < ApplicationRecord
                     uniqueness: true
                     # 3
                     # uniqueness: { case_sensitive: false }
-
   # 5
   # セキュアにハッシュ化したパスワードを、データベース内のpassword_digestという属性に保存。
   has_secure_password
-
   validates :password, presence: true, length: { minimum: 6 }
+
+  # 渡された文字列のハッシュ値を返す.テスト用ユーザーのパスワード生成の為に作成。
+  def User.digest(string)
+    cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+                                                  BCrypt::Engine.cost
+    BCrypt::Password.create(string, cost: cost)
+  end
 
 end
 

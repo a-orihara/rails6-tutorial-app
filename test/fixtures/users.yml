@@ -1,0 +1,14 @@
+# 1 テスト用ユーザー。
+michael:
+  name: Michael Example
+  email: michael@example.com
+  password_digest: <%= User.digest('password') %>
+
+# 1
+# has_secure_password で必要となる password_digest 属性はこれで準備できましたが、ハッシュ
+# 化されていない生のパスワードも参照できると便利です。しかし残念な ことに、fixture ではこのよう
+# なことはできません。さらに、リスト 8.23 に password 属 性を追加すると、そのようなカラムはデ
+# ータベースに存在しないというエラーが発生します。実際、データベースにはそんなカラムはありません。
+# この状況を切り抜けるため、 テスト用の fixture では全員同じパスワード「password」を使うこと
+# にします(これは fixture でよく使われる手法です)。
+

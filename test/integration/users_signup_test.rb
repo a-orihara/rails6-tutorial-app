@@ -32,6 +32,8 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
     # この行の直後では’users/show’ テンプレートが表示されているはず
     follow_redirect!
     assert_template 'users/show'
+    # is_logged_in?:テストヘルパーメソッド
+    assert is_logged_in?
   end
 
 end
