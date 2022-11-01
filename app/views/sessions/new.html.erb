@@ -1,0 +1,48 @@
+<% provide(:title, "Log in") %>
+<h1>Log in</h1>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%# 1 %>
+    <%# /loginへ内容をpostメソッドへ。createアクションが発動 %>
+    <%= form_with(url: login_path, scope: :session, local: true) do |f| %>
+
+      <%= f.label :email %>
+      <%= f.email_field :email, class: 'form-control' %>
+
+      <%= f.label :password %>
+      <%= f.password_field :password, class: 'form-control' %>
+
+      <%= f.submit "Log in", class: "btn btn-primary" %>
+    <% end %>
+
+    <p>New user? <%= link_to "Sign up now!", signup_path %></p>
+  </div>
+</div>
+
+<%# 1 %>
+<%#
+@modelが存在する場合は、自動的に送信先のパスとアクションが指定される。
+modelが存在しない場合はurlとscopeを指定してあげる必要がある。
+送った値をデータベースに保存するときはモデルのインスタンス（@user）を与え、保存する必要がないとき
+(今回のセッションの場合)はURLを指定する。
+
+@セッションフォームとユーザー登録フォームの最大の違いは、セッションには Session モデルというものが
+なく、そのため@user のようなインスタンス変数に相当するものもない点です。
+[form_with(model: @user, local: true)]
+Rails では上のように書くだけで、「フォームの action は/users という URL への POST である」と
+自動的に判定しますが、セッションの場合はリソースのスコープ(ここでは セッション)とそれに対応するURL
+を具体的に指定する必要があります。
+
+@:scopeは各inputのname属性をグループ化するのに使う。
+フォーム送信後に params ハッシュに入る値が、メールアドレスとパスワードのフィールドにそれぞれ対応し
+たparams[:session][:email] と params[:session][:password] になることが推測できると思います。
+
+@
+<form accept-charset="UTF-8" action="/login" method="post">
+  <input name="authenticity_token" type="hidden" value="NNb6+J/j46LcrgYUC60wQ2titMuJQ5lLqyAbnbAUkdo=" />
+
+  <label for="session_email">Email</label>
+  <input class="form-control" id="session_email" name="session[email]" type="email" />
+</form>
+%>

@@ -18,6 +18,8 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
     # ↑この書き方は今ではNG:@user = User.new(params[:user])
     if @user.save
+      # 6 ユーザー登録出来たらそのままログイン状態にする。一時セッション状態になる。
+      log_in @user
       # 登録完了後に表示 されるページにメッセージを表示。Railsではflash という特殊な変数を使用。
       # ウェルカムメッセージ。flash 変数に代入したメッセージは、リダイレクトした直後のページで表示できるよう になります。
       flash[:success] = "Welcome to the Sample App!"
@@ -110,3 +112,13 @@ end
 # redirect_to(@user)
 #Rubyでは、()は省略できる(6)
 # redirect_to @user
+
+# 6
+# def log_in(user)
+#   session[:user_id] = user.id
+# end
+# Sessions コントローラがあることで、Users コントローラで log_in メソッドを使えます。 そのために
+# 必要なモジュールはリスト 8.13 (下記[app/controllers/application_controller.rb])で対応しています。
+# class ApplicationController < ActionController::Base
+#   include SessionsHelper
+# end

@@ -45,6 +45,7 @@ end
 # Windows ではタイムゾーン情報用の tzinfo-data gem を含める必要があります
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
+
 # 1
 # Bootstrap フレームワークでは、動的なスタイルシートを生成するために LESS CSS 言語を使っていますが、
 # Rails の Asset Pipeline はデフォルトでは(LESS と非常によく似た)Sass 言語をサポートします(5.2)。

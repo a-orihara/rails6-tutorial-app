@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get 'sessions/new'
   # 1
   root 'static_pages#home'
   # 2
@@ -6,6 +7,10 @@ Rails.application.routes.draw do
   get '/about', to: 'static_pages#about'
   get '/contact', to: 'static_pages#contact'
   get '/signup', to: 'users#new'
+  # 4
+  get    '/login',   to: 'sessions#new'
+  post   '/login',   to: 'sessions#create'
+  delete '/logout',  to: 'sessions#destroy'
   # 3
   resources :users
 end
@@ -59,6 +64,15 @@ end
 # 今回はジェネレータを使っていないので、show.html.erb ファイルを手動で作成する必要があります。
 # したがって、app/views/users/show.html.erb ファイルを手動で作成します。
 
-
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 4
+# Usersリソースのときは専用のresourcesメソッドを使って RESTful なルーティングを自動的にフルセット
+# で利用できるようにしましたが、Session リソースではフルセットはいらないので、「名前付きルーティン
+# グ」だけを使います。この名前付きルーティングでは、GET リクエストや POST リクエストを loginルー
+# ティングで、 DELETE リクエストを logout ルーティングで扱います。
+# なお、rails generateでnewアクションを生成すると、それに対応するビューも生 成されます。create
+# や destroy には対応するビューが必要ないので、無駄なビューを 作成しないためにここでは new だけ
+# を指定しています。
+# rails routesコマンドを実行してみま しょう。いつでも現状のルーティングを確認することができます。
 
 
