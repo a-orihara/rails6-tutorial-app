@@ -50,6 +50,8 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
     # 2 is_logged_in?:テストヘルパーメソッド。テストユーザーがログイン中の場合にtrueを返す
     assert_not is_logged_in?
     assert_redirected_to root_url
+    # 2 番目のウィンドウでログアウトをクリックするユーザーをシミュレートする。２つのバグの１つ目の問題
+    delete logout_path
     follow_redirect!
     assert_select "a[href=?]", login_path
     assert_select "a[href=?]", logout_path,      count: 0
@@ -58,17 +60,36 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
 
   # 無効な情報でのログインのテスト
   test "login with invalid information" do
-  get login_path
-  # 'sessions/new'urlで描画されるviewが表示されているか
-  assert_template 'sessions/new'
-  # '/login'へparamsハッシュのsessionハッシュの内容のポスト
-  post login_path, params: { session: { email: "", password: "" } }
-  assert_template 'sessions/new'
-  # flashがあればfalseなのでグリーン
-  assert_not flash.empty?
-  get root_path
-  # flashが空かどうか
-  assert flash.empty?
+    get login_path
+    # 'sessions/new'urlで描画されるviewが表示されているか
+    assert_template 'sessions/new'
+    # '/login'へparamsハッシュのsessionハッシュの内容のポスト
+    post login_path, params: { session: { email: "", password: "" } }
+    assert_template 'sessions/new'
+    # flashがあればfalseなのでグリーン
+    assert_not flash.empty?
+    get root_path
+    # flashが空かどうか
+    assert flash.empty?
+  end
+
+  # リメンバー（永続）ありでログイン
+  # 2
+  test "login with remembering" do
+    log_in_as(@user, remember_me: '1')
+    # ログインに成功すれば、cookies 内部の remember_token キーを調べることで、ユーザーが保存
+    # されたかどうかをチェックできるようになります。
+    assert_not_empty cookies['remember_token']
+  end
+
+  # リメンバー（永続）なしでログイン
+  test "login without remembering" do
+    # クッキーを保存してログイン
+    log_in_as(@user, remember_me: '1')
+    delete logout_path
+    # クッキーを削除してログイン
+    log_in_as(@user, remember_me: '0')
+    assert_empty cookies['remember_token']
   end
 end
 
@@ -79,3 +100,10 @@ end
 #   log_out
 #   redirect_to root_url
 # end
+
+# 2
+# ログインに成功すれば、cookies 内部の remember_token キーを調べることで、ユーザーが保存され
+# たかどうかをチェックできるようになります。cookies の値がユーザーの 記憶トークンと一致すること
+# を確認できれば理想的なのですが、現在の設計ではテストでこの確認を行うことはできません。コントロ
+# ーラ内のuser変数には記憶トークンの属性が含まれていますが、remember_token は実在しない「
+# 仮想」のものなので、@user インスタンス変数の方には含まれていません。

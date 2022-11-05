@@ -1,6 +1,9 @@
 # 1
 
 class User < ApplicationRecord
+
+  # 8 DBとは連携しないremember_token属性を生成
+  attr_accessor :remember_token
   # 4
   # ユーザーをデータベースに保存する前にemail 属性を強制的に小文字に変換。メールアドレスが小文字で統一される。
   before_save { self.email = email.downcase }
@@ -25,6 +28,36 @@ class User < ApplicationRecord
     cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
                                                   BCrypt::Engine.cost
     BCrypt::Password.create(string, cost: cost)
+  end
+
+  # 6 ランダムなトークンを返す
+  def User.new_token
+    # A–Z、a–z、0–9、"-"、"_"のいずれかの文字(64 種類)からなる長さ22のランダムな文字列を返します
+    SecureRandom.urlsafe_base64
+  end
+
+  # 7 永続セッションのためにユーザーをデータベースに記憶する
+  def remember
+    # ランダムなトークンをuserモデルのremember_token属性に追加
+    self.remember_token = User.new_token
+    # 9記憶ダイジェストを更新。このメソッドはバリデーションを素通りさせます。
+    # self.update_attributeでもいい。
+    update_attribute(:remember_digest, User.digest(remember_token))
+  end
+
+  # 渡された記憶トークン(remember_token)が記憶ダイジェスト(remember_digest)と一致したらtrue を返す
+  def authenticated?(remember_token)
+    # ２番めのバグの問題
+    # 記憶ダイジェストがnilの場合にはreturnキーワードで即座にメソッドを終了。
+    # 処理を中途で終了する場合によく使われるテクニック。
+    return false if remember_digest.nil?
+    # bcryptを使ってcookies[:remember_token]がremember_digestと一致することを確認
+    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  end
+
+  # 10 ユーザーのログイン情報を破棄する。記憶ダイジェストの消去。
+  def forget
+    update_attribute(:remember_digest, nil)
   end
 
 end
@@ -92,3 +125,46 @@ end
 # 失敗する理由は、has_secure_passwordには、仮想的なpassword属性とpassword_confirmation属性に対して、
 # バリデーションをする機能も (強制的に)追加されているからです。
 # テストをパスさせるために、パスワードとパスワード確認の値を追加します。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 6
+# このメソッドではユーザーオブジェクトが不要なので、このメソッドもUserモデルのクラスメソッドとして作成
+# 一般に、あるメソッドがオブジェクトのインスタンスを必要としていない場合は、クラスメソッドにする のが常道です。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 7
+# 記憶トークン(remember_token)をユーザーと関連付け、トークンに対応する記憶ダイジェストをデータベースに保存します。
+# マイグレーションは実行済みなので、User モデルには既に remember_digest 属性が追加されていますが、
+# remember_token 属性 はまだ追加されていません。このため user.remember_token メソッドを使って
+# トークンにアクセスできるようにし、かつ、トークンをデータベースに保存せずに実装する必要があります。
+# そこで、6.3 で行ったパスワードの実装と同様の手法でこれを解決します。あのときは仮想のpassword属
+# 性と、データベース上にあるセキュアなpassword_digest 属性の 2 つを使いました。仮想の自動で作成された
+# password属性は has_secure_password メソッドで 自動的に作成されましたが、今回は
+# remember_token属性のコードを自分で書く必要があります。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 8
+# attr_accessor:メソッド（セッター、ゲッター）を作るメソッド(メタプログラミング)。
+# 引数で渡された属性を生成。
+# 生成された属性に=（メソッド）を付けられる。
+# セッター：a.remember_token=('foobar') みたいな。
+# a.remember_token 'foobar'と同じ意味。
+# ゲッター：a.remember_token *=>foobar みたいな。
+# だからこれができるようになる→self.remember_token = User.new_token
+
+# 仮想の password 属性は has_secure_password メソッドで自動的に作成されましたが、
+# 今回は remember_token のコードを自分で書く必要があり ます。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 9
+# update メソッドは属性のハッシュを受け取り、成功時には更新と保存を続けて同時に行います(保存に成功
+# した場合は true を返します)。ただし、検証に 1 つでも失敗すると、 update の呼び出しは失敗し
+# ます。例えば 6.3 で実装すると、パスワードの保存を要求するようになり、検証で失敗するようにな
+# ります。特定の属性のみを更新したい場合は、次 のように update_attribute を使います。この
+# update_attribute には、検証を回避 するといった効果もあります。
+
+# 10
+# ブラウザの cookies を削除 する手段が未実装なので(20 年待てば消えますが)、ユーザーがログアウト
+# できません。ユーザーがログアウトできるようにするために、ユーザーを記憶するためのメソッド と同様
+# の方法で、ユーザーを忘れるためのメソッドを定義します。この user.forget メ ソッドによって、
+# user.remember が取り消されます。

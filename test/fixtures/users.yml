@@ -2,6 +2,7 @@
 michael:
   name: Michael Example
   email: michael@example.com
+  # erb。暗号化するメソッドを自作。
   password_digest: <%= User.digest('password') %>
 
 # 1
