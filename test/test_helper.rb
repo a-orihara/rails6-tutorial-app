@@ -19,6 +19,26 @@ class ActiveSupport::TestCase
   def is_logged_in?
     !session[:user_id].nil?
   end
+
+  # 単体テストの場合は下記、統合テストの場は統合テストのlog_in_asを使用
+  # コントローラーの単体テストの場合はsessionが使える。
+  def log_in_as(user)
+    session[:user_id] = user.id
+  end
+end
+
+class ActionDispatch::IntegrationTest
+
+  # テストユーザーとしてログインする
+  # 統合テストの場合はぽpostやgetを使って流れをテストするテスト。なのでsessionを使うより、
+  # postメソッドを使ったユーザー操作を模した内容の方が適切.また統合テストではsession を直接取り扱うことができない
+  # 3
+  def log_in_as(user, password: 'password', remember_me: '1')
+    # params{session}の内容でログイン
+    post login_path, params: { session: { email: user.email,
+                                          password: password,
+                                          remember_me: remember_me } }
+  end
 end
 
 # 1
@@ -38,3 +58,11 @@ end
 # def logged_in?
 #   !current_user.nil?
 # end
+
+# 3
+# メソッド名は同じ log_in_as ですが、今回は統合テストで扱うヘルパーなので ActionDispatch::IntegrationTest
+# クラスの中で定義します。これにより、私たち 開発者は単体テストか統合テストかを意識せずに、
+# ログイン済みの状態をテストしたいと きは log_in_as メソッドをただ呼び出せば良い、という
+# ことになります
+# テストコードがより便利になるように、log_in_as メソッドではキー ワード引数のパスワードと
+# [remember me]チェックボックスのデフォ ルト値を、それぞれ’password’ と’1’ に設定

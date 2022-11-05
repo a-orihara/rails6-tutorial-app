@@ -3,6 +3,7 @@ class SessionsController < ApplicationController
   def new
   end
 
+  # sessionのcreateで、sessionを生成するアクション。
   def create
     # 1
     user = User.find_by(email: params[:session][:email].downcase)
@@ -10,6 +11,10 @@ class SessionsController < ApplicationController
     if user && user.authenticate(params[:session][:password])
       # 3 一時セッションを保存（ブラウザ閉じたら無効）
       log_in user
+      # チェックボックスがオンのときに’1’ になり、オフのときに’0’ になります。
+      # 1:remember(user)で永続セッションを保存。暗号化したuser_idとremember_digestを永続化クッキーに保存。
+      # 2:forget(user)で永続セッションを破棄。
+      params[:session][:remember_me] == '1' ? remember(user) : forget(user)
       redirect_to user
     # ユーザーログイン後にユーザー情報のページにリダイレクトする。認証に失敗したときにfalseを返す。
     else
@@ -23,7 +28,8 @@ class SessionsController < ApplicationController
 
   def destroy
     # セッションを消去。現在のユーザーをnilに設定。@current_userをnilにする。
-    log_out
+    # ログインしていた場合のみログアウト出来る
+    log_out if logged_in?
     redirect_to root_url
   end
 end
