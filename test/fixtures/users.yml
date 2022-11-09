@@ -4,6 +4,30 @@ michael:
   email: michael@example.com
   # erb。暗号化するメソッドを自作。
   password_digest: <%= User.digest('password') %>
+  admin: true
+
+archer:
+  name: Sterling Archer
+  email: duchess@example.gov
+  password_digest: <%= User.digest('password') %>
+
+# ページネーションのテストの為に30＋下記二名追加。2ぺーじ目が出来るから
+lana:
+  name: Lana Kane
+  email: hands@example.gov
+  password_digest: <%= User.digest('password') %>
+
+malory:
+  name: Malory Archer
+  email: boss@example.gov
+  password_digest: <%= User.digest('password') %>
+
+<% 30.times do |n| %> 
+user_<%= n %>:
+  name: <%= "User #{n}" %>
+  email: <%= "user-#{n}@example.com" %>
+  password_digest: <%= User.digest('password') %>
+<% end %>
 
 # 1
 # has_secure_password で必要となる password_digest 属性はこれで準備できましたが、ハッシュ

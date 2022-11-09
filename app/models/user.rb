@@ -21,7 +21,9 @@ class User < ApplicationRecord
   # 5
   # セキュアにハッシュ化したパスワードを、データベース内のpassword_digestという属性に保存。
   has_secure_password
-  validates :password, presence: true, length: { minimum: 6 }
+  # 11
+  # :allow_nilオプションは、対象の値がnilの場合にバリデーションをスキップします。
+  validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
   # 渡された文字列のハッシュ値を返す.テスト用ユーザーのパスワード生成の為に作成。
   def User.digest(string)
@@ -168,3 +170,11 @@ end
 # できません。ユーザーがログアウトできるようにするために、ユーザーを記憶するためのメソッド と同様
 # の方法で、ユーザーを忘れるためのメソッドを定義します。この user.forget メ ソッドによって、
 # user.remember が取り消されます。
+
+# 11
+# 新規ユーザー登録時に空のパスワードが有効になってしま うのかと心配になるかもしれませんが、安心してく
+# ださい。6.3.3 で説明したように、 has_secure_password では(追加したバリデーションとは別に)オブ
+# ジェクト生成時 に存在性を検証するようになっているため、空のパスワード(nil)が新規ユーザー登 録時に
+# 有効になることはありません。(空のパスワードを入力すると存在性のバリデーションと has_secure_password
+# によるバリデーションがそれぞれ実行され、2 つの同 じエラーメッセージが表示されるというバグがありま
+# したが(7.3.3)、これで解決できました。)

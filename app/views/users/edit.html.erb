@@ -1,0 +1,62 @@
+<%# 新規ユーザー登録ページとほぼ似ている %>
+<% provide(:title, "Edit user") %> 
+<h1>Update your profile</h1>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%# 1 %>
+    <%= form_with(model: @user, local: true) do |f| %>
+      <%# error_messages パーシャルを再利用 DRY %>
+      <%= render 'shared/error_messages' %>
+
+      <%= f.label :name %>
+      <%= f.text_field :name, class: 'form-control' %>
+
+      <%= f.label :email %>
+      <%= f.email_field :email, class: 'form-control' %>
+
+      <%= f.label :password %>
+      <%= f.password_field :password, class: 'form-control' %>
+
+      <%= f.label :password_confirmation, "Confirmation" %>
+      <%= f.password_field :password_confirmation, class: 'form-control' %>
+
+      <%= f.submit "Save changes", class: "btn btn-primary" %>
+    <% end %>
+
+    <%# 画像の更新はrailsではなくgravatarで対応しているので、そこへ飛ばす。%>
+    <div class="gravatar_edit">
+      <%= gravatar_for @user %>
+      <%# target="_blank":リンク先を新しいタブ(またはウィンドウ)で開くようになる %>
+      <a href="https://gravatar.com/emails" target="_blank">change</a>
+    </div>
+
+  </div>
+</div>
+
+<%# 
+1 
+@user インスタンス変数を使うと、編集ページがうまく描画されるよう になります。画面の"Name"や"Email"の部分を
+見ると、Rails によって名前や メールアドレスのフィールドに値が自動的に入力されていることがわかります。これら
+の 値は、@user 変数の属性情報から引き出されています。
+
+今回の@userは、新規ユーザー作成ページの@userと違い、中身が空ではないので、更新メソッドになる。
+空かどうかはActive Record の new_record?論理値メソッドを使ってrailsが判断している。
+空なら新規作成、あれば中身の更新
+
+htmlソース
+<form accept-charset="UTF-8" action="/users/1" class="edit_user" id="edit_user_1" method="post">
+  <input name="_method" type="hidden" value="patch" /> .
+.
+</form>
+*HTTPは4つのリクエストがあるが、現在ブラウザはgetとpostリクエストしか送れない。
+Web ブラウザはそのままでは PATCH リクエスト(表 7.1 で REST の慣習として要求され ている)を送信できないので、
+Rails は POST リクエストと、隠し input フィールドを利 用して PATCH リクエストを「偽造」しています。
+
+このの form_with(@user) のコードは、リスト 7.15 のコードと完全に同じです。だと すると、Rails はどうやって
+新規ユーザー用の POST リクエストとユーザー編集用の PATCH リクエストを区別するのでしょうか。その答えは、Rails 
+は、ユーザーが新規な のか、それともデータベースに存在する既存のユーザーであるかを、Active Record の new_record?
+論理値メソッドを使って区別できるからです。
+Rails は、form_with(@user) を使ってフォームを構成すると、@user.new_record?が true のときには POST を、
+false のときには PATCH を使います。
+%>

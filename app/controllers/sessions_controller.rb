@@ -4,8 +4,10 @@ class SessionsController < ApplicationController
   end
 
   # sessionのcreateで、sessionを生成するアクション。
+  # post:'/login', to: 'sessions#create'
   def create
     # 1
+    # usersテーブルから条件に合う最初のレコードを１件取得
     user = User.find_by(email: params[:session][:email].downcase)
     # authenticate:has_secure_passwordが提供するメソッド
     if user && user.authenticate(params[:session][:password])
@@ -15,7 +17,8 @@ class SessionsController < ApplicationController
       # 1:remember(user)で永続セッションを保存。暗号化したuser_idとremember_digestを永続化クッキーに保存。
       # 2:forget(user)で永続セッションを破棄。
       params[:session][:remember_me] == '1' ? remember(user) : forget(user)
-      redirect_to user
+      # 記憶したリクエストしたURL (もしくはデフォルト値[この場合はuser]) にリダイレクト
+      redirect_back_or user
     # ユーザーログイン後にユーザー情報のページにリダイレクトする。認証に失敗したときにfalseを返す。
     else
     # エラーメッセージを作成する

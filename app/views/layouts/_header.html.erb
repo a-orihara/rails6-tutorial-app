@@ -8,7 +8,8 @@
 
         <%# !current_user.nil? %>
         <% if logged_in? %>
-          <li><%= link_to "Users", '#' %></li>
+          <%# users_path:/users %>
+          <li><%= link_to "Users", users_path %></li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
               Account <b class="caret"></b>
@@ -16,7 +17,8 @@
             <ul class="dropdown-menu">
               <%# 1 current_user:@current_userを返す%>
               <li><%= link_to "Profile", current_user %></li>
-              <li><%= link_to "Settings", '#' %></li>
+              <%# edit_user_path(current_user):/users/#{current_user}/edit%>
+              <li><%= link_to "Settings", edit_user_path(current_user) %></li>
               <li class="divider"></li>
               <li>
                 <%# 2%>

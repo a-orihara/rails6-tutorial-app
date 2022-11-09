@@ -1,0 +1,25 @@
+<li>
+  <%= gravatar_for user, size: 50 %>
+  <%= link_to user.name, user %>
+  <%# 2 %>
+  <% if current_user.admin? && !current_user?(user) %>
+  <%# 1 %>
+    | <%= link_to "delete", user, method: :delete,
+                                  data: { confirm: "You sure?" } %>
+  <% end %>
+</li>
+
+<%# 1
+user = user_path(user)の省略形
+user_path(user):/user/:idにデフォでgetリクエストが送られるという意味。なのでdeleteを指定。
+ユーザー index ページの各ユーザーに削除用のリンクを追加し、続いて管理 ユーザーへのアクセスを制限します。
+これによって、現在のユーザーが管理者のときに限 り [delete] リンクが表示されるようになります(リスト 10.57)。
+
+必要な DELETE リクエストを発行するリンクの生成は、method: :delete によって 行われている点に注意してください。
+また、各リンクを if 文で囲い、管理者にだけ削除リ ンクが表示されるようにしています。うまく動くと、管理者から見え
+るページは図 10.15 のようになります。
+%>
+
+<%# 2
+管理者であれば、自分自身にはデリートメソッドを送れない。
+%>
