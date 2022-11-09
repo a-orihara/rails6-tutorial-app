@@ -16,7 +16,8 @@ module SessionsHelper
     cookies.permanent[:remember_token] = user.remember_token
   end
 
-  # 2 一時セッションがあれば、@current_userを返すメソッド。
+  # 2 一時セッションや永続クッキーがあれば、@current_userを返すメソッド。
+  # @current_userで現在ログインしているユーザーがどのユーザー化識別
   # ログインしてたらログインユーザーの情報を返す
   def current_user
     # 6 もし一時セッションのあるユーザーが存在してれば
@@ -36,6 +37,14 @@ module SessionsHelper
         @current_user = user
       end
     end
+  end
+
+  # 渡されたユーザーがカレントユーザーであればtrueを返す
+  def current_user?(user)
+    # ログインしてたら一時セッションが貼る。なのでcurrent_userのリターンからユーザーが返せる
+    # &&は左辺から順番に式を評価して「真」なら右辺を評価し、「偽」ならその時点で左辺の値(nil か false)を返します。
+    # nilガード
+    user && user == current_user
   end
 
   # 4 ユーザーがログインしていれば true、その他なら false を返す
@@ -69,6 +78,24 @@ module SessionsHelper
     # sessionを削除(sessionに入れた暗号化されたuser_idを削除)。
     session.delete(:user_id)
     @current_user = nil
+  end
+
+  # 記憶したURL（元々ユーザーが行きたかったURL）or(もしくはデフォルト値) にリダイレクト
+  def redirect_back_or(default)
+    # リクエストされた URL(元々ユーザーが行きたかったURL) が存在する場合はそこにリダイレクトし、ない場合は何らかのデフォルトの
+    # URL にリダイレクト
+    redirect_to(session[:forwarding_url] || default)
+    # 転送用の URL を削除。削除しないと次回ログインしたときに保護されたページに転送されてしまい、ブラウザを閉じるまでこれが
+    # 繰り返されてしまう。
+    session.delete(:forwarding_url)
+  end
+
+  # アクセスしようとしたURLをsessionのハッシュに[:forwarding_url]キーで保存して覚えておく
+  # 7
+  def store_location
+    # requestオブジェクトにはユーザーが送ったHTTPメソッドの情報も含まれるので、判別可能。
+    # getリクエストのみURLを保存(PATCHは保存しない)
+    session[:forwarding_url] = request.original_url if request.get?
   end
 end
 
@@ -146,6 +173,7 @@ end
 # [User.find_by(id: cookies.signed[:user_id])]
 # ↑cookies.signed[:user_id]では自動的にユーザーIDのcookiesの暗号が解除され、元に戻ります。
 
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 6
 # 永続セッションの場合は、session[:user_id] が存在すれば一時セッションからユー ザーを取り出し、
 # それ以外の場合は cookies[:user_id] からユーザーを取り出して、 対応する永続セッションにログイ
@@ -154,3 +182,13 @@ end
 # このコードを言葉で表 すと、「ユーザー ID がユーザー ID のセッションと等しければ...」ではなく、
 # 条件式ではなく、nillの有無を確かめる「(ユーザー ID にユーザー ID のセッションを代入した結果)ユーザー ID のセッションが存在すれば」
 #  となります。（）はなくてもいいが、わかりやすくするため付けている。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 7
+# store_location メソッドでは、 リクエストが送られた URL を session 変数の:forwarding_url キーに格納していま
+# す。ただし、GET リクエストが 送られたときだけ格納するようにしておきます。これによって、例えばログインしていないユ
+# ーザーがフォームを使って送信した場合、転送先の URL を保存させないようにできます。これは稀なケースですが起こり得ま
+# す。例えばユーザがセッション用の cookie を 手動で削除してフォームから送信するケースなどです。こういったケースに対処
+# しておか ないと、POST や PATCH、DELETE リクエストを期待している URL に対して、(リダイレ クトを通して)GET リクエ
+# ストが送られてしまい、場合によってはエラーが発生します。このため、if request.get?という条件文を使ってこのケースに
+# 対応しています。

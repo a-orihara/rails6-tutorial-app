@@ -1,5 +1,21 @@
 class UsersController < ApplicationController
 
+  # 8
+  # デフォルトでは、beforeフィルターはコントローラ内のすべてのアクションに適用されるので、ここでは適切な:onlyオプ
+  # ション(ハッシュ)を渡すことで、:edit と:update アクションだけにこのフィルタが適用されるように制限をかける。
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
+  before_action :correct_user,   only: [:edit, :update]
+  before_action :admin_user,     only: :destroy
+
+
+  # GET:/users
+  def index
+    # 9
+    # @userではない
+    # 30人で1ページのページネーション.gem 'will_paginate'で使用できる。
+    @users = User.paginate(page: params[:page])
+  end
+
   # 1
   def show
     # paramsハッシュのキーがシンボル:idの値を取り出す。
@@ -31,12 +47,67 @@ class UsersController < ApplicationController
     end
   end
 
+  # GET:/users/:id/edit
+  # デフォでedit.html.erbへ
+  def edit
+    # @user = User.find(params[:id])->不要。説明は7へ
+  end
+
+  # PATCH:/users/:id
+  def update
+    # @user = User.find(params[:id])->不要。説明は7へ
+    # user_params:Strong Parameters越しのユーザーがインプットした情報(マスアサインメントの脆弱性を防止)
+    if @user.update(user_params)
+      # 更新に成功した場合を扱う。 
+      flash[:success] = "Profile updated"
+      redirect_to @user
+    else
+      # 失敗したらerror object込みで、再度editページへ戻る。だからエラーメッセージが表示される。
+      render 'edit'
+    end
+  end
+
+  # DELETE /users/:id
+  def destroy
+    User.find(params[:id]).destroy
+    flash[:success] = "User deleted"
+    # users_url: /usersの絶対パス。ユーザー一覧へ移動。
+    redirect_to users_url
+  end
+
   # 外部から使えないようにします.privateキーワード以降のコードを強調するために、インデントを1段深くしてあります。
   private
 
     # 4 Strong Parameters
     def user_params
       params.require(:user).permit(:name, :email, :password,:password_confirmation)
+    end
+
+    # before アクション
+    # ログイン済みユーザーかどうか確認
+    def logged_in_user
+      unless logged_in?
+      # ログイン前にアクセスしようとしたURLをsessionのハッシュに[:forwarding_url]キーで保存して覚えておく
+      store_location
+      flash[:danger] = "Please log in."
+      # to /login
+      redirect_to login_url
+      end
+    end
+
+    # 7 正しいユーザーかどうか確認
+    def correct_user
+      @user = User.find(params[:id])
+      # unless以外のケースは何もしない
+      # current_user?:userがnilならnilを返す。user == currentuserならtrue
+      # ↑こういう式user && user == current_user
+      redirect_to(root_url) unless current_user?(@user)
+    end
+
+    # 管理者かどうか確認
+    def admin_user
+      # 管理者でなければルートページへリダイレクト
+      redirect_to(root_url) unless current_user.admin?
     end
 
 end
@@ -95,6 +166,9 @@ end
 # この user_params メソッドは Users コントローラの内部でのみ実行され、Web 経由で 外部ユーザーに
 # さらされる必要はないため、Ruby の private キーワードを使って外部から使えないようにします
 
+# @許可された属性リストに admin が含まれていない。これにより、任意のユーザーが自分自身にアプリケーションの管理者
+# 権限を与える ことを防止できます。
+
 # -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 5
 # redirect_to user_url(@user)
@@ -113,6 +187,7 @@ end
 #Rubyでは、()は省略できる(6)
 # redirect_to @user
 
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 6
 # def log_in(user)
 #   session[:user_id] = user.id
@@ -122,3 +197,33 @@ end
 # class ApplicationController < ActionController::Base
 #   include SessionsHelper
 # end
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 7
+# 別のユーザーのプロフィールを編集しようとしたらリダイレクトさせたいので、 correct_user というメソッドを作成し、
+# before フィルターからこのメソッドを呼び出 すようにします(リスト 10.25)。before フィルターの correct_user
+# で@user 変数を定 義しているため、リスト 10.25 では edit と update の各アクションから、@user への代 
+# 入文を削除している点にも注意してください。
+
+# ApplicationControllerでinclude SessionsHelperしているからcurrent_user?が使える
+# ログインしてたら一時セッションが貼る。なのでcurrent_userでユーザーが返せる
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 8
+# *railsではメソッドを引数に呼ぶ時は、シンボルで呼ぶ場合が多い
+# :correct_userのみだとcorrect_userが呼び出せないから、:logged_in_userもbefore_actionで付ける
+
+# @ユーザー を削除するためにはログインしていなくてはならないので、リスト 10.58 では:destroy アクションも 
+# logged_in_user フィルターに追加しています。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 9
+# paginate では、キーが:page で値がページ番号のハッシュを引数に取ります。 
+# [User.paginate(page: 1)]
+# User.paginate は、:page パラメー
+# ターに基いて、データベースからひとかたまりの データ(デフォルトでは 30)を取り出します。したがって、1 ページ目は
+# 1 から 30 の ユーザー、2 ページ目は 31 から 60 のユーザーといった具合にデータが取り出されます。 ちなみに 
+# page が nil の場合、 paginate は単に最初のページを返します
+# paginate を使うことで、サンプルアプリケーションのユーザーのページネーションを行えるようになります。具体的には、
+# index アクション内の User.all を User.paginate メソッド に置き換えます(リスト 10.46)。ここで:page パラメーターには
+# params[:page] が使われていますが、これは will_paginate によって自動的に生成されます。
