@@ -1,0 +1,36 @@
+<%# 1 %>
+Hi <%= @user.name %>,
+
+Welcome to the Sample App! Click on the link below to activate your account:
+<%# 2 %>
+<%= edit_account_activation_url(@user.activation_token, email: @user.email) %>
+
+<%= @greeting %>, find me in app/views/user_mailer/account_activation.text.erb
+
+<%# 1
+生成したメイラーごとに、それぞれのメソッドのビューのテンプレートが 2 つずつ生成されます。1 つはテキス
+トメール用のテンプレート、1 つは HTML メール用のテンプレートです。
+%>
+
+<%# 2
+@Rails サーバーでユーザーをメールアドレスで検索して有効化トークンを認証できるようにしたいので、リンクには
+メールアドレスとトークンを両方含めておく必要があります。
+edit_account_activation_url: account_activations/q5lt38hQDc_959PVoo6b7A(*トークン)/edit
+*edit_user_url(user): users/1/editだから。
+トークンは/users/1/edit の「1」のようなユーザー ID と同じ役割を果たします。
+この トークンは、特に AccountActivations コントローラの edit アクションでは params ハッ シュで 
+params[:id] として参照できます。
+
+@クエリパラメータを使って、この URL にメールアドレスもうまく組み込んでみましょう。クエリパラメータとは、
+URL の末尾で疑問符「?」に続けてキーと値のペアを記述し たものです。
+[account_activations/q5lt38hQDc_959PVoo6b7A/edit?email=foo%40example.com]
+このとき、メールアドレスの「@」記号が URL では「%40」となっている点に注目してく ださい。これは「エスケープ」
+と呼ばれる手法で、通常 URL では扱えない文字を扱える ようにするために変換されています。
+Rails でクエリパラメータを設定するには、「名前付きルート」に対して次のようなハッシュを追加します。
+[edit_account_activation_url(@user.activation_token, email: @user.email)]
+このようにして名前付きルートでクエリパラメータを定義すると、Rails が特殊な文字を 自動的にエスケープしてくれ
+ます。コントローラで params[:email] からメールアドレ スを取り出すときには、自動的にエスケープを解除してく
+れます。
+**6 URL のクエリパラメータではキー/値ペアを複数使うこともできます。その場合は、「&」を使って 
+「/edit?name=Foo%20Bar&email=foo%40example.com」のように区切ります。
+%>

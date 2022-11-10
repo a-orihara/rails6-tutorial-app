@@ -12,7 +12,10 @@ User.create!(name:  "Example User",
   email: "example@railstutorial.org",
   password:              "foobar",
   password_confirmation: "foobar",
-  admin: true)
+  admin: true,
+  activated: true,
+  # Time.zone.now:Rails の組み込みヘルパーであり、サーバーのタイムゾーンに応じたタイムスタンプを返します。
+  activated_at: Time.zone.now)
 
 # 追加のその他のユーザーをまとめて生成する
 99.times do |n|
@@ -23,10 +26,13 @@ password = "password"
 User.create!(name:  name,
     email: email,
     password:              password,
-    password_confirmation: password)
+    password_confirmation: password,
+    activated: true,
+    activated_at: Time.zone.now)
 end
 
 # 1
+# 基本的に開発環境で使うデータの作成を担うファイル。
 # seedsファイル：コンソールに打ち込むがごとく、上からコードが実施される。
 # この一つ一つのrubyスクリプトの事をタスク、またはrakeタスクと呼ぶ。
 # create!は基本的に create メソッドと同じものですが、ユーザーが無効な場合に false を返すのではなく例外を発生

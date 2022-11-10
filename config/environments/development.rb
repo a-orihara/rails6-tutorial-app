@@ -32,7 +32,12 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
+  # [メーラーが送信できなくても気にしないこと。]
   config.action_mailer.raise_delivery_errors = false
+  # localhost で開発している場合は以下をお使いください
+  host = 'localhost:5000'
+  config.action_mailer.default_url_options = { host: host, protocol: 'http' }
+
 
   config.action_mailer.perform_caching = false
 

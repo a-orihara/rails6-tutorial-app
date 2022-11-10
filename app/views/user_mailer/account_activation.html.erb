@@ -1,0 +1,24 @@
+<%# 1 %>
+<h1>Sample App</h1>
+
+<p>
+Welcome to the Sample App! Click on the link below to activate your account:
+</p>
+<%# 2 %>
+<%= link_to "Activate", edit_account_activation_url(@user.activation_token,
+                                                    email: @user.email) %>
+
+<%# 1
+生成したメイラーごとに、それぞれのメソッドのビューのテンプレートが 2 つずつ生成されます。1 つはテキス
+トメール用のテンプレート、1 つは HTML メール用のテンプレートです。
+%>
+
+<%# 2
+@Rails でクエリパラメータを設定するには、「名前付きルート」に対して次のようなハッシュを追加します。
+[edit_account_activation_url(@user.activation_token, email: @user.email)]
+hoge: fooなら[account_activations/q5lt38hQDc_959PVoo6b7A/edit?hoge=foo]になる。
+
+@デフォルトだと名前付きルートに@userを渡すとuser_idに変換されるので、@user.activation_tokenを指定。
+
+@link_toでメール文内にリンクを生成.
+%>
