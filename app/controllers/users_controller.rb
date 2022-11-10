@@ -32,15 +32,21 @@ class UsersController < ApplicationController
   def create
     # 3
     @user = User.new(user_params)
-    # ↑この書き方は今ではNG:@user = User.new(params[:user])
+    # ↑この書き方は今ではNG→:@user = User.new(params[:user])
+    # before_createが発火。有効化トークンセット。
     if @user.save
       # 6 ユーザー登録出来たらそのままログイン状態にする。一時セッション状態になる。
-      log_in @user
+      # ↓11章から下記に変更:log_in @user
+      # send_activation_email:deliver_nowでメソッドチェーン.deliver_now:メールを送信する
+      @user.send_activation_email
       # 登録完了後に表示 されるページにメッセージを表示。Railsではflash という特殊な変数を使用。
       # ウェルカムメッセージ。flash 変数に代入したメッセージは、リダイレクトした直後のページで表示できるよう になります。
-      flash[:success] = "Welcome to the Sample App!"
+      # ↓11章から下記に変更:flash[:success] = "Welcome to the Sample App!"
+      flash[:info] = "Please check your email to activate your account."
       # 5 redirect_to user_url(@user)と等価。/users
-      redirect_to @user
+      # ↓11章から下記に変更:redirect_to @user
+      # mail送信後、リダイレクト先をルートURLに、かつユーザーは以前のようにログインしないように。
+      redirect_to root_url
     # 保存の成功をここで扱う。
     else
       render 'new'

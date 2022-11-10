@@ -30,7 +30,8 @@ module SessionsHelper
       user = User.find_by(id: user_id)
       # 永続セッション（クッキー）から出したユーザーと記憶ダイジェストを照合
       # userが退会していたら、userが自分でクッキーを削除していたら等、userやクッキーががnilの場合もあるから。&&:nilガードを使用。
-      if user && user.authenticated?(cookies[:remember_token])
+      # ↓11章より下記:if user && user.authenticated?(cookies[:remember_token])
+      if user && user.authenticated?(:remember, cookies[:remember_token])
         # ログイン
         log_in user
         # @current_user生成

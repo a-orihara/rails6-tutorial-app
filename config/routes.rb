@@ -13,6 +13,9 @@ Rails.application.routes.draw do
   delete '/logout',  to: 'sessions#destroy'
   # 3
   resources :users
+  # editのURL、アクション、対応する名前付きルートのみ作成(デフォは7つ)  
+  # GET  /account_activation/トークン/edit  edit_account_activation_url(token)
+  resources :account_activations, only: [:edit]
 end
 
 # =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
@@ -47,10 +50,11 @@ end
 # 扱うということです。HTTP 標準には、これらに対応 する4つの基本操作(POST、GET、PATCH、DELETE)
 # が定義されているので、これら の基本操作を各アクションに割り当てていきます。
 
-# @resources :users という行は、ユーザー情報を表示する URL(/users/1)を追加するためだけの
+# @resources:URL、7アクション、対応する名前付きルートを生成
+# resources :users という行は、ユーザー情報を表示する URL(/users/1)を追加するためだけの
 # ものではありません。サンプルアプリケーションにこの1行を追加すると、 ユーザーの URL を生成す
-# るための多数の名前付きルートと共に、RESTful な Users リソースで必要となるすべてのアクション
-# が利用できるようになるのです。この行に対応する生成されるURLやアクション、名前付きルートは下記のように
+# るための多数の名前付きルートと共に、RESTful な Users リソースで必要となるすべての7アクション
+# が利用できるようになるのです。この行に対応する生成されるURLや7アクション、名前付きルートは下記のように
 # なります。
 # HTTP    URL            アクション  名前付きルート          用途
 # GET     /users         index     users_path            すべてのユーザーを一覧するページ

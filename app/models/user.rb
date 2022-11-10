@@ -2,14 +2,23 @@
 
 class User < ApplicationRecord
 
-  # 8 DBとは連携しないremember_token属性を生成
-  attr_accessor :remember_token
+  # 8 DBとは連携しない仮属性としてremember_token、activation_token属性を生成
+  attr_accessor :remember_token, :activation_token
+
   # 4
-  # ユーザーをデータベースに保存する前にemail 属性を強制的に小文字に変換。メールアドレスが小文字で統一される。
-  before_save { self.email = email.downcase }
+  # ↓11章で下記に書き換え:before_save { self.email = email.downcase }。このコードは明示的にブロックを渡している。
+  # オブジェクトが保存される直前、オブジェクトの作成時や更新時に発火。
+  before_save :downcase_email
+
+  # 12
+  # オブジェクトの作成時のみ発火。つまりユーザーを新規登録した瞬間
+  # before_saveだとプロフィール更新時にも発火してしまう。
+  before_create :create_activation_digest
+
   # validatesはメソッド。presence: true という引数は、要素が1つのオプションハッシュです。
   # メソッドの最後の引数としてハッシュを渡す場合、波カッコを付けなくても問題ありません。validates(:name, presence: true)。
   validates :name, presence: true, length: { maximum: 50 }
+
   # 定数です。大文字で始まる名前は Ruby では定数を意味します。
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
 
@@ -18,6 +27,7 @@ class User < ApplicationRecord
                     uniqueness: true
                     # 3
                     # uniqueness: { case_sensitive: false }
+
   # 5
   # セキュアにハッシュ化したパスワードを、データベース内のpassword_digestという属性に保存。
   has_secure_password
@@ -47,20 +57,48 @@ class User < ApplicationRecord
     update_attribute(:remember_digest, User.digest(remember_token))
   end
 
-  # 渡された記憶トークン(remember_token)が記憶ダイジェスト(remember_digest)と一致したらtrue を返す
-  def authenticated?(remember_token)
-    # ２番めのバグの問題
-    # 記憶ダイジェストがnilの場合にはreturnキーワードで即座にメソッドを終了。
-    # 処理を中途で終了する場合によく使われるテクニック。
-    return false if remember_digest.nil?
-    # bcryptを使ってcookies[:remember_token]がremember_digestと一致することを確認
-    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  # 14
+  # トークンがダイジェストと一致したら true を返す。動的ディスパッチ。 
+  def authenticated?(attribute, token)
+    # selfは省略可能:digest = self.send("#{attribute}_digest")
+    # 全てのオブジェクトにsendメソッドあり
+    digest = send("#{attribute}_digest")
+    return false if digest.nil?
+    BCrypt::Password.new(digest).is_password?(token)
   end
 
   # 10 ユーザーのログイン情報を破棄する。記憶ダイジェストの消去。
   def forget
     update_attribute(:remember_digest, nil)
   end
+
+  # アカウントを有効にする
+  def activate
+    update_attribute(:activated,    true)
+    # Time.zone.now:今の時間を刻む
+    update_attribute(:activated_at, Time.zone.now)
+  end
+
+  # 有効化用のメールを送信する
+  def send_activation_email
+    # account_activation:有効化メールのmailオブジェクトを作成
+    UserMailer.account_activation(self).deliver_now
+  end
+
+  # ユーザーモデル以外で使わないメソッド
+  private
+
+    # メールアドレスをすべて小文字にする 
+    def downcase_email
+      self.email = email.downcase
+    end
+
+    # 13 有効化トークンと有効化ダイジェストを作成および代入する
+    def create_activation_digest
+      # activation_token=: セッターメソッド
+      self.activation_token = User.new_token
+      self.activation_digest = User.digest(activation_token)
+    end
 
 end
 
@@ -89,7 +127,8 @@ end
 
 # -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 4
-# いくつかのデータベースのア ダプタが、常に大文字小文字を区別するインデックス を使っているとは
+# ユーザーをデータベースに保存する前にemail 属性を強制的に小文字に変換。メールアドレスが小文字で統一される。
+# いくつかのデータベースのアダプタが、常に大文字小文字を区別するインデックス を使っているとは
 # 限らない問題へ の対処です。例えば、Foo@ExAMPle.Com と foo@example.com が別々の文字列だ
 # と解 釈してしまうデータベースがありますが、私達のアプリケーションではこれらの文字列 は同一で
 # あると解釈されるべきです。今回は「データベース に保存される直前にすべての文字列を小文字に変換
@@ -165,12 +204,14 @@ end
 # ります。特定の属性のみを更新したい場合は、次 のように update_attribute を使います。この
 # update_attribute には、検証を回避 するといった効果もあります。
 
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 10
 # ブラウザの cookies を削除 する手段が未実装なので(20 年待てば消えますが)、ユーザーがログアウト
 # できません。ユーザーがログアウトできるようにするために、ユーザーを記憶するためのメソッド と同様
 # の方法で、ユーザーを忘れるためのメソッドを定義します。この user.forget メ ソッドによって、
 # user.remember が取り消されます。
 
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 11
 # 新規ユーザー登録時に空のパスワードが有効になってしま うのかと心配になるかもしれませんが、安心してく
 # ださい。6.3.3 で説明したように、 has_secure_password では(追加したバリデーションとは別に)オブ
@@ -178,3 +219,47 @@ end
 # 有効になることはありません。(空のパスワードを入力すると存在性のバリデーションと has_secure_password
 # によるバリデーションがそれぞれ実行され、2 つの同 じエラーメッセージが表示されるというバグがありま
 # したが(7.3.3)、これで解決できました。)
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 12
+# @ユーザーが新しい登録を完了するためには必ずアカウントの有効化が必要になるのですから、有効化トークンや有効化
+# ダイジェストはユーザーオブジェクトが作成される前に作 成しておく必要があります。
+# オブジェクトに before_save コールバックを用意しておくと、 オブジェクトが保存される直前、オブジェクトの作成時
+# や更新時にそのコールバックが呼 び出されます。しかし今回は、オブジェクトが作成されたときだけコールバックを呼び出
+# したいのです。それ以外のときには呼び出したくないのです。そこで before_create コールバックが必要になります。
+
+# @このコードはメソッド参照と呼ばれるもので、こうすると Rails は create_activation_ digest というメソッドを探し、
+# ユーザーを作成する前に実行するようになります(リ スト 6.32 では、before_save に明示的にブロックを渡していましたが、
+# メソッド参照 の方がオススメできます)。create_activation_digest メソッド自体は User モデル 内でしか使わない
+# ので、外部に公開する必要はありません。7.3.2 のときと同じように private キーワードを指定して、このメソッドを 
+# Ruby 流に隠蔽します。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 13
+# update_attributeは特に更新しないのでなし。
+# 記憶トー クンやダイジェストは既にデータベースにいるユーザーのために作成されるのに対し、 activation_tokenの
+# before_create コールバックの方はユーザーが作成される前に呼び出されることです。 このコールバックがあることで、
+# User.new で新しいユーザーが定義されると(リス ト 7.19)、activation_token 属性や activation_digest 属性
+# が得られるようになり ます。後者の activation_digest 属性は既にデータベースのカラムとの関連付けがで きあがっ
+# ている(図 11.1)ので、ユーザーが保存されるときに一緒に保存されます。
+
+# 14
+# 以前のコード
+# *   *   *
+# 渡された記憶トークン(remember_token)が記憶ダイジェスト(remember_digest)と一致したらtrue を返す
+# def authenticated?(remember_token)
+#   # ２番めのバグの問題
+#   # 記憶ダイジェストがnilの場合にはreturnキーワードで即座にメソッドを終了。
+#   # 処理を中途で終了する場合によく使われるテクニック。
+#   return false if remember_digest.nil?
+#   # bcryptを使ってcookies[:remember_token]がremember_digestと一致することを確認
+#   BCrypt::Password.new(remember_digest).is_password?(remember_token)
+# end
+# *   *   *
+# authenticated?メソッドの抽象化
+# *「メタプログラミング」:「プログラムでプログラムを作成する」ことです。メタプログラミング は Ruby が有するきわ
+# めて強力な機能。
+# *send メソッド:渡されたオ ブジェクトに「メッセージを送る」ことによって、呼び出すメソッドを動的に決めることがで
+# きます。
+# *その他詳細はrails tutorialの11.3へ
+

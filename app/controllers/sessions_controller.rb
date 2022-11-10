@@ -10,15 +10,25 @@ class SessionsController < ApplicationController
     # usersテーブルから条件に合う最初のレコードを１件取得
     user = User.find_by(email: params[:session][:email].downcase)
     # authenticate:has_secure_passwordが提供するメソッド
+    # ユーザー作成済みの為、有効化認証前にログインURLへ直接飛んでパスワードを打ち込めばログイン可能問題を防止
     if user && user.authenticate(params[:session][:password])
-      # 3 一時セッションを保存（ブラウザ閉じたら無効）
-      log_in user
-      # チェックボックスがオンのときに’1’ になり、オフのときに’0’ になります。
-      # 1:remember(user)で永続セッションを保存。暗号化したuser_idとremember_digestを永続化クッキーに保存。
-      # 2:forget(user)で永続セッションを破棄。
-      params[:session][:remember_me] == '1' ? remember(user) : forget(user)
-      # 記憶したリクエストしたURL (もしくはデフォルト値[この場合はuser]) にリダイレクト
-      redirect_back_or user
+      # ユーザーが 有効である場合にのみログイン
+      if user.activated?
+        # 3 一時セッションを保存（ブラウザ閉じたら無効）
+        log_in user
+        # チェックボックスがオンのときに’1’ になり、オフのときに’0’ になります。
+        # 1:remember(user)で永続セッションを保存。暗号化したuser_idとremember_digestを永続化クッキーに保存。
+        # 2:forget(user)で永続セッションを破棄。
+        params[:session][:remember_me] == '1' ? remember(user) : forget(user)
+        # 記憶したリクエストしたURL (もしくはデフォルト値[この場合はuser]) にリダイレクト
+        redirect_back_or user
+      else
+        # 警告メッセージを表示し、ルートへ飛ばす
+        message  = "Account not activated. "
+        message += "Check your email for the activation link."
+        flash[:warning] = message
+        redirect_to root_url
+      end
     # ユーザーログイン後にユーザー情報のページにリダイレクトする。認証に失敗したときにfalseを返す。
     else
     # エラーメッセージを作成する

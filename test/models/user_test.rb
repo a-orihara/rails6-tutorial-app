@@ -78,7 +78,8 @@ class UserTest < ActiveSupport::TestCase
 
   # ダイジェストがnilだったユーザーにはfalseを返すべき。２番めのバグのテスト
   test "authenticated? should return false for a user with nil digest" do
-    assert_not @user.authenticated?('')
+    # ↓11章より下記:assert_not @user.authenticated?('')
+    assert_not @user.authenticated?(:remember, '')
   end
 
 end
