@@ -2,6 +2,8 @@ class AccountActivationsController < ApplicationController
 
   # GET  /account_activation/:id/edit  edit_account_activation_url(token)
   # アプリから送信されたメールの有効化をクリックすると上記をリクエストする。
+  # アカウントを有効にする
+  # 3 何故updateアクションではないのか
   def edit
     # emailから探す
     # 2
@@ -45,3 +47,11 @@ end
 # GET  /account_activation/:id/edit  edit_account_activation_url(token)
 # つまり  /account_activation/<ここにトークン>/edit
 # で、params[:id]で有効化トークンが取り出せる
+
+# 3
+# 有効化用のリンクにアクセスして有効化の ステータスを変更する部分では、REST のルールに従うと PATCH リクエス
+# トと update アクションになるべきです(表 7.1)。しかし、有効化リンクはメールでユーザーに送られ ることを思い
+# 出してください。ユーザーがこのリンクをクリックすれば、それはブラウザ で普通にクリックしたときと同じであり、
+# その場合ブラウザから発行されるのは(update アクションで使う PATCH リクエストではなく)GET リクエストになっ
+# てしまいます。こ のため、ユーザーからの GET リクエストを受けるために、(本来であれば update のとこ ろを)
+# edit アクションに変更して使っていきます。

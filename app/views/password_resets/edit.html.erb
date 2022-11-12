@@ -1,0 +1,49 @@
+<% provide(:title, 'Reset password') %>
+<h1>Reset password</h1>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%= form_with(model: @user, url: password_reset_path(params[:id]),
+                  local: true) do |f| %>
+      <%= render 'shared/error_messages' %>
+      <%# 1 %>
+      <%= hidden_field_tag :email, @user.email %>
+
+      <%= f.label :password %>
+      <%= f.password_field :password, class: 'form-control' %>
+
+      <%= f.label :password_confirmation, "Confirmation" %>
+      <%= f.password_field :password_confirmation, class: 'form-control' %>
+
+      <%= f.submit "Update password", class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</div>
+
+<%# 1
+ユーザー認証のためのユーザーのメアドをおくる。paramsの中にemailを入れる
+@非表示のフォームを作成します（emai情報も送信）。
+hidden_field_tagは単体でも使えますし、form_withの中でも使用することができます。
+ユーザーのidなど、ユーザーがフォームから入力しない情報をパラメーターとして渡したいときに使用します。
+[hidden_field_tag :カラム名, 値]
+例えばユーザーidに現在ログインしているユーザーのidを入れたい場合は下記のように記述します。
+[hidden_field_tag :user_id, current_user.id]
+パラムスで取得する場合は、params[:user_id]で受け取れる。
+form.hidden_field or f.hidden_fieldの場合はこうとなる。
+params[:user][:name]
+
+@edit アクションと update アクションの両方で、メールアドレスをキーとしてユーザーを検索するためにメールアド
+レスが必要になる。
+
+@メールアドレスを キーとしてユーザーを検索するためには、edit アクションと update アクションの両方 でメール
+アドレスが必要になるからです。例のメールアドレス入りリンクのおかげで、 edit アクションでメールアドレスを取り
+出すことは問題ありません。しかしフォームを 一度送信してしまうと、この情報は消えてしまいます。この値はどこに
+保持しておくのが よいのでしょうか。今回はこのメールアドレスを保持するため、隠しフィールドとして ページ内に
+保存する手法をとります。これにより、フォームから送信したときに、他の情 報と一緒にメールアドレスが送信される
+ようになります。
+これまでは次のようなコード
+[f.hidden_field :email, @user.email]
+を書いていましたが、今回は書き方が異なっています。
+これは再設定用のリンクをクリックすると、前者(hidden_field_tag)ではメールア ドレスが params[:email] に保
+存されますが、後者([f.hidden_field])では params[:user][:email] に 保存されてしまうからです。
+%>
