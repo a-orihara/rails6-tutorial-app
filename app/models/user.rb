@@ -3,7 +3,7 @@
 class User < ApplicationRecord
 
   # 8 DBとは連携しない仮属性としてremember_token、activation_token属性を生成
-  attr_accessor :remember_token, :activation_token
+  attr_accessor :remember_token, :activation_token, :reset_token
 
   # 4
   # ↓11章で下記に書き換え:before_save { self.email = email.downcase }。このコードは明示的にブロックを渡している。
@@ -85,8 +85,36 @@ class User < ApplicationRecord
     UserMailer.account_activation(self).deliver_now
   end
 
+  # パスワード再設定の属性を設定する
+  def create_reset_digest
+    # 再設定トークンをセット
+    self.reset_token = User.new_token
+    # 再設定トークンをハッシュ化して再設定ダイジェストにセット
+    update_attribute(:reset_digest, User.digest(reset_token))
+    # パスワード再設定の属性を設定した時間を記録
+    update_attribute(:reset_sent_at, Time.zone.now)
+  end
+
+  # パスワード再設定のメールを送信する
+  def send_password_reset_email
+    UserMailer.password_reset(self).deliver_now
+  end
+
+  # パスワード再設定の期限2時間以上が切れている場合はtrueを返す
+  def password_reset_expired?
+    # < 記号を「~現在時刻により早い（近い）時刻」と読んでください。
+    # パスワード再設定メールの送信時刻が、現在時刻より2時間以上前(早い)の場合
+    # 例/現在時刻:15時、パスワード再設定:12時、15時より2時間以上前:13時
+    # selfは省略可能:↓self.reset_sent_at
+    reset_sent_at < 2.hours.ago
+  end
+
   # ユーザーモデル以外で使わないメソッド
   private
+
+    def user_params
+      params.require(:user).permit(:password, :password_confirmation)
+    end
 
     # メールアドレスをすべて小文字にする 
     def downcase_email

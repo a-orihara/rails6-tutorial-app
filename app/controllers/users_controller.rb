@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
 
   # 8
+  # アクションに関してのバリデーション
   # デフォルトでは、beforeフィルターはコントローラ内のすべてのアクションに適用されるので、ここでは適切な:onlyオプ
   # ション(ハッシュ)を渡すことで、:edit と:update アクションだけにこのフィルタが適用されるように制限をかける。
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy]

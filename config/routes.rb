@@ -1,4 +1,7 @@
+# このファイルでルート（URL）、名前付きルートを生成する。
 Rails.application.routes.draw do
+  get 'password_resets/new'
+  get 'password_resets/edit'
   get 'sessions/new'
   # 1
   root 'static_pages#home'
@@ -16,6 +19,7 @@ Rails.application.routes.draw do
   # editのURL、アクション、対応する名前付きルートのみ作成(デフォは7つ)  
   # GET  /account_activation/トークン/edit  edit_account_activation_url(token)
   resources :account_activations, only: [:edit]
+  resources :password_resets, only: [:new, :create, :edit, :update]
 end
 
 # =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
@@ -64,6 +68,11 @@ end
 # GET     /users/1/edit  edit      edit_user_path(user)  id=1のユーザーを編集するページ
 # PATCH   /users/1       update    user_path(user)       ユーザーを更新するアクション
 # DELETE  /users/1       destroy   user_path(user)       ユーザーを削除するアクション
+
+# GET   /password_resets/new          new     new_password_reset_path
+# POST  /password_resets              create  password_resets_path
+# GET   /password_resets/トークン/edit  edit    edit_password_reset_url(token)
+# PATCH /password_resets/トークン       update  password_reset_url(token)
 # *Rails の REST 機能が有効になっていると、GET リクエストは自動的に show アクションとして扱われ ます。
 # 今回はジェネレータを使っていないので、show.html.erb ファイルを手動で作成する必要があります。
 # したがって、app/views/users/show.html.erb ファイルを手動で作成します。
