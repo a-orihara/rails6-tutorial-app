@@ -82,6 +82,18 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.authenticated?(:remember, '')
   end
 
+  # 関連マイクロポストは破棄されるべき
+  test "associated microposts should be destroyed" do
+    # userを保存
+    @user.save
+    # user.microposts.create!(arg):userに紐付いたマイクロポストを作成する(失敗時に例外を発生)
+    @user.microposts.create!(content: "Lorem ipsum")
+    assert_difference 'Micropost.count', -1 do
+      # destroy:modelオブジェクトの持つメソッド
+      @user.destroy
+    end
+  end
+
 end
 
 # 1

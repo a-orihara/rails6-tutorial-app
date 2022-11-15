@@ -1,0 +1,17 @@
+<%# 各マイクロポストに対して CSS の id を割り振っています。
+将来、JavaScript ,reactを使って各マイクロポスト を操作したくなったときなどに役立ちます。%>
+<li id="micropost-<%= micropost.id %>">
+  <%= link_to gravatar_for(micropost.user, size: 50), micropost.user %>
+  <span class="user"><%= link_to micropost.user.name, micropost.user %></span>
+  <span class="content">
+    <%= micropost.content %>
+  </span>
+  <span class="timestamp">
+    <%# time_ago_in_words:「○分前に投稿」といった文字列を出力します。%>
+    Posted <%= time_ago_in_words(micropost.created_at) %> ago.
+    <%# 投稿の所有ユーザーであれば、削除リンクを表示%>
+    <% if current_user?(micropost.user) %>
+      <%= link_to "delete", micropost, method: :delete, data: { confirm: "You sure?" } %>
+    <% end %>
+  </span>
+</li>
