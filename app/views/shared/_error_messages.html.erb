@@ -1,18 +1,23 @@
-<% if @user.errors.any? %>
+<%# 1 %>
+<% if object.errors.any? %>
   <div id="error_explanation">
 
     <div class="alert alert-danger">
-      The form contains <%= pluralize(@user.errors.count, "error") %>.
+      The form contains <%= pluralize(object.errors.count, "error") %>.
     </div>
 
     <ul>
-    <% @user.errors.full_messages.each do |msg| %>
-      <li><%= msg %></li>
-    <% end %>
+      <% object.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
     </ul>
 
   </div>
 <% end %>
+
+<%# 1
+object.errors.any:渡されたf.objectが入る。
+%>
 
 <%#
 @パーシャルによって、Rails と Ruby には、Rails エラーオブジェクト用の 2 つのメソッド を含む多くの

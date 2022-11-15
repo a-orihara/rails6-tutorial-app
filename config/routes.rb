@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   # GET  /account_activation/トークン/edit  edit_account_activation_url(token)
   resources :account_activations, only: [:edit]
   resources :password_resets, only: [:new, :create, :edit, :update]
+  resources :microposts, only: [:create, :destroy]
 end
 
 # =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
@@ -73,6 +74,10 @@ end
 # POST  /password_resets              create  password_resets_path
 # GET   /password_resets/トークン/edit  edit    edit_password_reset_url(token)
 # PATCH /password_resets/トークン       update  password_reset_url(token)
+
+# POST   /microposts    create   microposts_path
+# DELETE /microposts/1  destroy  micropost_path(micropost)
+
 # *Rails の REST 機能が有効になっていると、GET リクエストは自動的に show アクションとして扱われ ます。
 # 今回はジェネレータを使っていないので、show.html.erb ファイルを手動で作成する必要があります。
 # したがって、app/views/users/show.html.erb ファイルを手動で作成します。
@@ -87,5 +92,13 @@ end
 # や destroy には対応するビューが必要ないので、無駄なビューを 作成しないためにここでは new だけ
 # を指定しています。
 # rails routesコマンドを実行してみま しょう。いつでも現状のルーティングを確認することができます。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 5
+# 従来の Rails 開発の慣習と異なる箇所が 1 つあります。Microposts リソースへのイン ターフェイスは、主にプ
+# ロフィールページと Home ページのコントローラを経由して 実行されるので、Microposts コントローラには new
+# や edit のようなアクションは不要 ということになります。つまり、create と destroy があれば十分です。
+# したがって、 Microposts のリソースはこのようになります。その結果、この（13.30のコード）は、RESTfulな
+# ルーティングのサブセットになります。
 
 

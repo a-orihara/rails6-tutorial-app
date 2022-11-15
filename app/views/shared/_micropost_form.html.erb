@@ -1,0 +1,25 @@
+<%# 1 %>
+<%= form_with(model: @micropost, local: true) do |f| %>
+  <%# 2 %>
+  <%= render 'shared/error_messages', object: f.object %>
+  <div class="field">
+    <%# :contentでparamsのcontentと紐付け%>
+    <%= f.text_area :content, placeholder: "Compose new micropost..." %>
+  </div>
+  <%= f.submit "Post", class: "btn btn-primary" %>
+<% end %>
+
+<%# 1
+[model: @micropost]を渡しているので、空のmicropostオブジェクトが送られて来た場合、form_withメソッドは、
+createアクション(デフォでPOSTリクエストを送る)だと自動で判断する。
+
+@micropostはからだけど、user_idだけ入っている
+%>
+
+<%# 2
+formにはformオブジェクトがある。
+formメソッドは、renderの先に変数を渡せる。この場合、objectという変数にmicropostオブジェクトを入れている
+パーシャルの先でmicropostオブジェクトを呼び出せるようになる
+[object: f.object]は、@userならuserオブジェクトを、＠micropostならmicropostオブジェクトを参照する
+
+%>

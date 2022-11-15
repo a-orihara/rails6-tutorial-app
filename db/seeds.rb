@@ -31,6 +31,14 @@ User.create!(name:  name,
     activated_at: Time.zone.now)
 end
 
+# ユーザーの一部を対象にマイクロポストを作成されたユーザーの最初の6人に生成する
+users = User.order(:created_at).take(6)
+50.times do
+  # Faker::Lorem.sentence:loremipsumと呼ばれるダミーのテキストを返す
+  content = Faker::Lorem.sentence(word_count: 5)
+  users.each { |user| user.microposts.create!(content: content) }
+end
+
 # 1
 # 基本的に開発環境で使うデータの作成を担うファイル。
 # seedsファイル：コンソールに打ち込むがごとく、上からコードが実施される。

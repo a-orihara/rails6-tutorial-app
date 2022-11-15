@@ -23,6 +23,8 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     # 2
     # debugger
+    # 10
+    @microposts = @user.microposts.paginate(page: params[:page])
   end
 
   def new
@@ -88,18 +90,6 @@ class UsersController < ApplicationController
     # 4 Strong Parameters
     def user_params
       params.require(:user).permit(:name, :email, :password,:password_confirmation)
-    end
-
-    # before アクション
-    # ログイン済みユーザーかどうか確認
-    def logged_in_user
-      unless logged_in?
-      # ログイン前にアクセスしようとしたURLをsessionのハッシュに[:forwarding_url]キーで保存して覚えておく
-      store_location
-      flash[:danger] = "Please log in."
-      # to /login
-      redirect_to login_url
-      end
     end
 
     # 7 正しいユーザーかどうか確認
@@ -227,10 +217,30 @@ end
 # 9
 # paginate では、キーが:page で値がページ番号のハッシュを引数に取ります。 
 # [User.paginate(page: 1)]
-# User.paginate は、:page パラメー
-# ターに基いて、データベースからひとかたまりの データ(デフォルトでは 30)を取り出します。したがって、1 ページ目は
+# User.paginate は、:page パラメーターに基いて、データベースからひとかたまりのデータ(デフォルトでは30)を
+# 取り出します。したがって、1 ページ目は
 # 1 から 30 の ユーザー、2 ページ目は 31 から 60 のユーザーといった具合にデータが取り出されます。 ちなみに 
 # page が nil の場合、 paginate は単に最初のページを返します
+# params[:page])が1なら1~30のユーザー、params[:page])が2なら31~60のユーザーが取り出され@usersに代入
+
 # paginate を使うことで、サンプルアプリケーションのユーザーのページネーションを行えるようになります。具体的には、
 # index アクション内の User.all を User.paginate メソッド に置き換えます(リスト 10.46)。ここで:page パラメーターには
 # params[:page] が使われていますが、これは will_paginate によって自動的に生成されます。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 10
+# 1ページに30の投稿を表示
+
+# 一度にすべてのマイクロポストが表示されてしまう潜在的問題に対処します。 10.3.3 ではページネーションを使いまし
+# たが、今回も同じ方法でこの問題を解決します。 前回同様、will_paginate メソッドを使うと次のようになります。
+# [<%= will_paginate @microposts %>]
+# リスト 10.45 のユーザー一覧画面のコードと比較すると、少し違っています。以前は次の ように単純なコードでした。
+# [<%= will_paginate %>]
+# 実は、上のコードは引数なしで動作していました。これは will_paginate が、Users コントローラのコンテキストに
+# おいて、@users インスタンス変数が存在していることを前提としているためです。このインスタンス変数は、10.3.3
+# でも述べたように ActiveRecord::Relation クラスのインスタンスです。今回の場合は Users コント ローラのコ
+# ンテキストからマイクロポストをページネーションしたいため(つまりコンテ キストが異なるため)、明示的に
+# @microposts 変数を will_paginate に渡す必要があります。したがって、そのようなインスタンス変数を Users
+# コントローラの show アクションで定義しなければなりません(リスト 13.23)。
+# paginate メソッドの素晴らしさに注目してください。マイクロポストの関連付けを経由して microposts テーブル
+# に到達し、必要なマイクロポストのページを引き出してくれます。
