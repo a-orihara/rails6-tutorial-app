@@ -5,6 +5,8 @@
   <span class="user"><%= link_to micropost.user.name, micropost.user %></span>
   <span class="content">
     <%= micropost.content %>
+    <%# 1 %>
+    <%= image_tag micropost.display_image if micropost.image.attached? %>
   </span>
   <span class="timestamp">
     <%# time_ago_in_words:「○分前に投稿」といった文字列を出力します。%>
@@ -15,3 +17,14 @@
     <% end %>
   </span>
 </li>
+
+<%#1
+一度画像がアップロードされれば、micropost パーシャルの image_tag ヘルパーを用 いて、関連付けられた 
+micropost.image を描画(レンダリング)できるようになります (リスト 13.62)。また、画像の無い(テキストのみの)
+マイクロポストでは画像を表示さ せないようにするために、attached?という論理値を返すメソッドを使っている点に
+注目してください。
+
+image_tag:imageタグを生成。メソッドの引数には、必須の引数として画像ファイルを指定します。
+image_tagメソッドの1番目の引数に単に画像ファイル名を指定した場合は、このディレクトリに設置されたものとして
+、パスが付いたタグが出力されます。
+%>
