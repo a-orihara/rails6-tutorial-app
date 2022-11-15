@@ -7,7 +7,8 @@ FROM ruby:2.7.6
 # -qq:quietモードで実行。ログを極力表示させない。エラー以外を表示しないオプション
 RUN apt-get update -qq \
   # パッケージのインストール（nodejs、npmを指定）
-  && apt-get install -y nodejs npm \
+  # imagemagick:rails tutorial13章の為にインストール
+  && apt-get install -y nodejs npm imagemagick \
   # rm -rf:ディレクトリを強制削除
   # aptのキャッシュを削除し容量を小さくする
   && rm -rf /var/lib/apt/lists/* \

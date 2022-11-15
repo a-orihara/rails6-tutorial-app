@@ -1,12 +1,24 @@
 class Micropost < ApplicationRecord
   # 1 リファレンス型
   belongs_to :user
+  # 3
+  has_one_attached :image
   # 2
   # ↓省略:default_scope -> { self.order(created_at: :desc) }
   default_scope -> { order(created_at: :desc) }
   # presence:はnilの他に半角のスペースもチェックする（ダメを出す）。
   validates :user_id, presence: true
   validates :content, presence: true, length: { maximum: 140 }
+  # 4
+  validates :image,   content_type: { in: %w[image/jpeg image/gif image/png],
+                                      message: "must be a valid image format" },
+                                      size: { less_than: 5.megabytes,
+                                      message: "should be less than 5MB" }
+  # 表示用のリサイズ済み画像を返す def display_image
+  def display_image
+    # 5
+    image.variant(resize_to_limit: [500, 500])
+  end
 end
 
 # =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
@@ -77,3 +89,40 @@ end
 # 例/Page.order(:category_id):pagesテーブルをcategory_idで並び替える
 # /Page.order(:category_id :asc):昇順で並び替える
 # default_scope.callで処理を呼び出す。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 3
+# has_one_attached:指定のモデルと、アップロードされたファイルを関連付けるのに使います。この場合はimageを
+# 指定して Micropost モデルと関連付けます。
+# このアプリケーションでは「マイクロポスト1件につき画像は1件」という設計を採用していますが、Active Storageで
+# はそのほかに has_many_attached オプションも提供して います。これは、Active Record オブジェクト 1 件に
+# つき複数のファイルを添付できます。
+
+# Active Storageはファイルアップロードを行うための機能です。これを使えば、フォームで画像の投稿機能などが簡
+# 単に作れます。また、Amazon S3などのクラウドストレージサービスに対するファイルのアップロードを簡単に行う
+# ことができます。
+
+# :imageはファイルの呼び名で、:photo、:avatar、:hogeなど、ファイルの用途に合わせて好きなものを指定してく
+# ださい。ここで、Imageモデルなどを作る必要はないです。Active Storageは裏側でBlobとAttachmentモデルを
+# 使って、こそこそとcomment.imageを使えるようにしてくれます。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 4
+# gem 'active_storage_validations', '0.8.2'で使用可能なバリデーション
+
+# content_type を検査 することで画像をバリデーションできます。
+# { in: %w[image/jpeg image/gif image/png], message: "must be a valid image format" }
+# 上のコードは、サポートする画像フォーマットに対応する画像 MIME type をチェックし ます( 6.2.4 で使
+#  った配列構築構文 %w[](配列を作成)を思い出しましょう)。
+# size: { less_than: 5.megabytes,message: "should be less than 5MB" }
+# 上のコードは、画像の最大サイズ を 5 MB に制限しています。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 5
+# Active Storage が提供する variantメソッドで変換済み画像を作成できるようにします。特にresize_to_limit
+# オプションを用いて、画像の幅や高さが 500 ピクセルを超えることのないように制約をかけます。
+
+# variant によるリサイズは、[app/views/microposts/_micropost.html.erb]でこのメソッドが最初に呼ばれる
+# ときにオンデマンドで実行され、以後は結果をキャッシュしますので効率が高まります。
+# *もっと大規模なサイトでは、おそらくバックグラウンド処理に任せる方がよいでしょう。この手法は本チュートリアル
+# の範疇を超えますが、この方針で進める必要がある場合は、手始めに Active Job を調べる とよいでしょう。

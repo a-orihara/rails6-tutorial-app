@@ -4,6 +4,14 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.6'
 
 gem 'rails',      '6.0.4'
+# awsのs3へのアップロードに使用
+gem 'aws-sdk-s3',                 '1.113.0', require: false
+# imagemagickの画像加工で使用
+gem 'image_processing',           '1.12.2'
+# imagemagickの画像加工で使用
+gem 'mini_magick',                '4.9.5'
+# 2
+gem 'active_storage_validations', '0.8.2'
 # has_secure_passwordを使ってパスワードをハッシュ化するためには、最先端のハッシュ関数であるbcryptが必要
 gem 'bcrypt',         '3.1.13'
 gem 'faker',                   '2.20.0'
@@ -54,3 +62,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 # Rails の Asset Pipeline はデフォルトでは(LESS と非常によく似た)Sass 言語をサポートします(5.2)。
 # そのため、bootstrap-sass は、LESS を Sass へ変換し、
 # 必要な Bootstrap ファイルを現在のアプリケーションですべて利用できるようにします。
+
+# 2
+# なお執筆時点の Active Storage は、(少々驚きですが)こうしたフォーマット機能やバ リデーション機能がネ
+# イティブでサポートされていません。よくあることですが、こうい う場合はそうした機能を gem で追加します。
