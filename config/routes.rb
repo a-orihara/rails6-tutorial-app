@@ -14,6 +14,12 @@ Rails.application.routes.draw do
   get    '/login',   to: 'sessions#new'
   post   '/login',   to: 'sessions#create'
   delete '/logout',  to: 'sessions#destroy'
+  # 6
+  resources :users do
+    member do
+      get :following, :followers
+    end
+  end
   # 3
   resources :users
   # editのURL、アクション、対応する名前付きルートのみ作成(デフォは7つ)  
@@ -101,4 +107,12 @@ end
 # したがって、 Microposts のリソースはこのようになります。その結果、この（13.30のコード）は、RESTfulな
 # ルーティングのサブセットになります。
 
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 6
+# どちらもデータを表示するページなので、適切な HTTP メソッドは GET リクエストになります。したがって、get
+# メソッドを使って適切なレスポンスを返 すようにします。ちなみに、member メソッドを使うとユーザー id が含
+# まれている URL を扱うようになりますが、 id を指定せずにすべてのメンバーを表示するには、collectionメソッド
+# を使います。
 
+# GET  /users/1/following  following  following_user_path(1)
+# GET  /users/1/followers  followers  followers_user_path(1)
