@@ -1,0 +1,15 @@
+<%# follow と unfollowの表示部分。
+このコードは、follow と unfollow のパーシャルに作業を振っているだけです。%>
+
+<%# もし自分のユーザーページでなければ %>
+<% unless current_user?(@user) %>
+  <div id="follow_form">
+  <% if current_user.following?(@user) %>
+    <%# unfollowボタン %>
+    <%= render 'unfollow' %>
+  <% else %>
+  <%# followボタン %>
+    <%= render 'follow' %>
+  <% end %>
+  </div>
+<% end %>

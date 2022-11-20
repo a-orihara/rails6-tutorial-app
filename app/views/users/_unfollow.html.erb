@@ -1,0 +1,14 @@
+<%# 単位ボタン。このフォロー解除フォームフォームでは、form_with を使って Relationship モデルオブ ジェクトを操作
+既存のリレーションシップを見つけ出し、DELETEリクエストを送信してリレーションシップを destroy(削除)する%>
+<%# [_follow_form.html.erb]により、ログインユーザー(current_user)がある時しか、このパーシャルは表示されない%>
+
+<%# 1 %>
+<%= form_with(model: current_user.active_relationships.find_by(followed_id: @user.id),
+             html: { method: :delete }, remote: true) do |f| %>
+  <%= f.submit "Unfollow", class: "btn btn-default" %>
+<% end %>
+
+<%# 1
+current_user.active_relationships.find_by(followed_id: @user.id):自分のフォローしている、
+ユーザー情報が入ったRelationクラスのインスタンスを返す
+%>

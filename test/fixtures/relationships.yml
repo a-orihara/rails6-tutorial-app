@@ -1,0 +1,21 @@
+# 前半の 2 つで Michael が Lana と Malory をフォローし、後 半の 2 つで Lana と Archer が Michael
+# をフォローしています。
+
+one:
+  # 1
+  follower: michael
+  followed: lana
+
+two:
+  follower: michael
+  followed: malory
+
+three:
+  follower: lana
+  followed: michael
+
+four:
+  follower: archer
+  followed: michael
+# 1
+#[follower: michael]:これは内部的には次のようなコードに自動的に変換されます。[user_id: 1]

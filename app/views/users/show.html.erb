@@ -10,8 +10,15 @@
         <%= @user.name %>
       </h1>
     </section>
+    <%# フォロワーの統計情報 %>
+    <section class="stats">
+      <%# 現在のフォロワー数を太字で表示 %>
+      <%= render 'shared/stats' %>
+    </section>
   </aside>
   <div class="col-md-8">
+    <%# フォロー用フォーム %>
+    <%= render 'follow_form' if logged_in? %>
     <% if @user.microposts.any? %>
       <%# 1 マイクロポストの投稿数を表示する %>
       <h3>Microposts (<%= @user.microposts.count %>)</h3>

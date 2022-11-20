@@ -406,7 +406,7 @@ end
 # active_relationship.followed                                   フォローしているユーザーを返します
 # user.active_relationships.create(followed_id: other_user.id)   userと紐付けて能動的関係を作成/登録する
 # user.active_relationships.create!(followed_id: other_user.id)  userを紐付けて能動的関係を作成/登録する(失敗時にエラーを出力)
-# user.active_relationships.build(followed_id: other_user.id)    userと紐付けた新しいRelationship オブジェクトを返す
+# user.active_relationships.build(followed_id: other_user.id)    userと紐付けた新しいRelationshipオブジェクトを返す
 
 # -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 18
