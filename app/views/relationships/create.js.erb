@@ -1,0 +1,31 @@
+<%# このファイルでフォロー/アンフォローのトグル。フォロー/アンフォロー数のリロード%>
+
+<%# 1 %>
+$("#follow_form").html("<%= escape_javascript(render('users/unfollow')) %>");
+$("#followers").html('<%= @user.followers.count %>');
+
+<%#1
+id:#follow_formのhtml要素を（）内に置き換える
+escape_javascript:""がかぶらないようにする
+viewと一緒でjsでも@userになってないとインスタンス変数を呼び出せない
+
+JS-ERb ファイルの内部では、DOM(Document Object Model)を使ってページを操作 するため、Rails が
+jQuery JavaScript ヘルパーを自動的に提供しています。これにより jQuery ライブラリの膨大な DOM 操作用
+メソッドが使えるようになりますが、13.4.2 で見 たように今回使うのはわずか 2 つです。1つずつ見ていきましょう。
+まずはドル記号($) と CSS id を使って、DOM 要素にアクセスする文法について知る必要があります。
+例えば follow_form の要素を jQuery で操作するには、次のようにアクセスします。
+[$("#follow_form")]
+これはフォームを囲む div タグであり、フォームそのものではなかっ たことを思い出してください。jQueryの文法は
+CSS の記法から影響を受けており、#シ ンボルを使って CSS の id を指定します。ご想像のとおり、jQuery は
+CSS と同様、ドッ ト. を使って CSS クラスを操作できます。
+
+次に必要なメソッドは html です。これは、引数の中で指定された要素の内側にあるHTMLを更新します。
+純粋な JavaScript と異なり、JS-ERb ファイルでは組み込み Ruby(ERb)が使えます。 create.js.erbファイル
+では、フォロー用のフォームを unfollow パーシャルで更新 し、フォロワーのカウントを更新するのに ERbを使って
+います(もちろんこれは、フォローに成功した場合の動作です)。
+
+escape_javascript:JavaScript ファイル内に HTML を挿入するときに実行結果をエスケープするために必要
+です。
+
+これらのコードにより、プロフィールページを更新させずにフォローとフォロー解除がで きるようになったはずです。
+%>

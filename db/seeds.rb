@@ -39,6 +39,16 @@ users = User.order(:created_at).take(6)
   users.each { |user| user.microposts.create!(content: content) }
 end
 
+# 以下のリレーションシップを作成する
+users = User.all
+user = users.first
+following = users[2..50]
+followers = users[3..40]
+# 最初のユーザーにユーザー 3 からユーザー 51 までをフォローさせ
+following.each { |followed| user.follow(followed) }
+# ユーザー 4 からユーザー 41 に最初のユーザーをフォローさせます。
+followers.each { |follower| follower.follow(user) }
+
 # 1
 # 基本的に開発環境で使うデータの作成を担うファイル。
 # seedsファイル：コンソールに打ち込むがごとく、上からコードが実施される。

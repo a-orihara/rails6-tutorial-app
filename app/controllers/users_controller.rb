@@ -4,7 +4,8 @@ class UsersController < ApplicationController
   # アクションに関してのバリデーション
   # デフォルトでは、beforeフィルターはコントローラ内のすべてのアクションに適用されるので、ここでは適切な:onlyオプ
   # ション(ハッシュ)を渡すことで、:edit と:update アクションだけにこのフィルタが適用されるように制限をかける。
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy,
+                                        :following, :followers]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
 
@@ -82,6 +83,26 @@ class UsersController < ApplicationController
     flash[:success] = "User deleted"
     # users_url: /usersの絶対パス。ユーザー一覧へ移動。
     redirect_to users_url
+  end
+
+  # GET  /users/1/following  followingアクション
+  # before_actionよりログインしていないと作動しない
+  def following
+    @title = "Following"
+    @user  = User.find(params[:id])
+    @users = @user.following.paginate(page: params[:page])
+    # 明示的にshow_followというビューを出力
+    render 'show_follow'
+  end
+
+  # GET  /users/1/followers  followersアクション
+  # followingと同じインスタンス名を使う。同じページを使い回すため。
+  def followers
+    @title = "Followers"
+    @user  = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    # followingと同じである理由は、このERbはどちらの場合でもほぼ同じな為、ページを使い回すから
+    render 'show_follow'
   end
 
   # 外部から使えないようにします.privateキーワード以降のコードを強調するために、インデントを1段深くしてあります。

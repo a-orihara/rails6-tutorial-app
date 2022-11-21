@@ -1,0 +1,63 @@
+<%# 単位ボタン。このフォローフォームでは、form_with を使って Relationship モデルオブジェクトを操作
+POST リクエストを Relationshipsコントローラに送信してリレーションシップを新規create(作成)する%>
+<%# [_follow_form.html.erb]により、ログインユーザー(current_user)がある時しか、このパーシャルは表示されない%>
+
+<%# 1 %>
+<%= form_with(model: current_user.active_relationships.build, remote: true) do |f| %>
+  <%# この:followed_idがcreateアクションに送られる %>
+  <%# 2 %>
+  <div><%= hidden_field_tag :followed_id, @user.id %></div>
+  <%= f.submit "Follow", class: "btn btn-primary" %>
+<% end %>
+
+<%#1
+form_withはコントローラーで作成したインスタンスがnewメソッドで新たに作成されて何も情報を持っていなければ
+自動的にcreateアクションへ、findメソッドなどで作成され、すでに情報を持っている場合はupdateアクションへ
+自動的に振り分けてくれます。コンパイルされると<form>タグに変換され、アクションが動くパスに変換されます。
+
+model: モデルクラスのインスタンス
+current_user.active_relationships.build:userと紐付けた新しいRelationshipオブジェクトを返す
+buildメソッドとは、インスタンスを生成するメソッドです。また、モデルの関連付けでもbuildメソッドは用いられます。
+インスタンスを生成するメソッドは他にnewメソッドがありますが、buildメソッドとの違いはありません。ただ以下の
+文言にもあるように、モデルの関連付けの際はbuildメソッドを使う約束があるようです。
+[暗黙の了解で、モデルを関連付けした時にはbuildを使うみたいな感じになっています。]
+buildメソッド：親モデルに属する子モデルのインスタンスを新たに生成したい場合に使うメソッド。（親モデル
+と子モデルは、アソシエーション設定あり）外部キーに値が入った状態でインスタンスが生成できる。
+(親モデル.子モデル.buildという形式)
+
+
+hidden_field_tag:ユーザーに隠されて送信されるデータ
+:followed_id:
+@user.id:相手型のID？
+
+このフォームにはボタンしかない。しかし、それでもこのフォー ムは followed_id をコントローラに送信する必要
+があります。これを行うために、リス ト 14.21 の hidden_field_tag メソッドを使います。このメソッドは、
+次のフォーム用 HTML を生成します。
+[input id="followed_id" name="followed_id" type="hidden" value="3"]
+12.3 のリスト 12.14 で見たように、隠しフィールドの input タグを使うことで、ブラウ ザ上に表示させずに適
+切な情報を含めることができます。
+
+Ajax
+デフォはremote: true。jsが動くように設定。local: trueは使わないように設定
+
+Relationships コントローラの create アクションと destroy アクションを単に元のその他ユーザーのプロフィールにリダイレクト
+していました。つまり、ユーザーはプロフィールページを最初に表示し、それ からユーザーをフォローし、その後すぐ元
+のページにリダイレクトされるという流れにな ります。ユーザーをフォローした後、本当にそのページから離れて元の
+ページに戻らない といけないのでしょうか。この点を考えなおしてみましょう。
+これは Ajax を使うことで解決できます。Ajax を使えば、Web ページからサーバーに 「非同期」で、ページを移動す
+ることなくリクエストを送信することができます。Web フォームに Ajax を採用するのは今や当たり前になりつつ
+あるので、Rails でも Ajax を簡 単に実装できるようになっています。フォロー用とフォロー解除用のパーシャルを
+これに沿って更新するのは簡単です。次のように置き換えるだけです。たったこれだけで、Rails は自動的に Ajaxを
+使うようになります。 
+[form_with(model: ..., remote: true)]
+ERb によって実際に生成される HTMLをお見せします。
+[form action="/relationships/117" class="edit_relationship" data-remote="true" id="edit_relationship_117" method="post"]
+form タグの内部で data-remote="true"を設定しています。これは、Java- Script によるフォーム操作を許可する
+ことを Rails に知らせるためのものです。現在の Rails では HTML プロパティを使って簡単に Ajax が扱えるように
+なっています。これは、JavaScript を前面に出すべからずという哲学に従っています。
+%>
+
+<%# 2
+hidden_field_tag :followed_id, @user.id:[followed_id]というパラメーターに、[@user.id]という値を
+渡す。params[:followed_id]で中身を参照できます。
+%>

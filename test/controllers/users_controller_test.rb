@@ -86,4 +86,18 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
   end
 
+  # ログインしていない場合、以下のようにリダイレクトする必要があります。
+  test "should redirect following when not logged in" do
+    # GET /users/1/following (ユーザーがフォローしている他ユーザーの集合を一覧表示するページ)
+    get following_user_path(@user)
+    assert_redirected_to login_url
+  end
+
+  # ログインしていないときにフォロワーをリダイレクトするようにする。
+  test "should redirect followers when not logged in" do
+    # GET  /users/1/followers
+    get followers_user_path(@user)
+    assert_redirected_to login_url
+  end
+
 end

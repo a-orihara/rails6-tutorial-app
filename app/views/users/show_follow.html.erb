@@ -1,0 +1,54 @@
+<%# フォローしている/フォローされている他ユーザーの集合。@titleで切り替え %>
+<% provide(:title, @title) %>
+
+<div class="row">
+
+  <%# サイドバー部分 %>
+  <aside class="col-md-4">
+    <section class="user_info">
+      <%# @user:自ユーザー %>
+      <%= gravatar_for @user %>
+      <h1><%= @user.name %></h1>
+      <span><%= link_to "view my profile", @user %></span>
+      <span><b>Microposts:</b> <%= @user.microposts.count %></span>
+    </section>
+    <section class="stats">
+      <%= render 'shared/stats' %>
+      <%# ＠users[@users = @user.following.paginate(page: params[:page])]はuser_controllerのfollowing,followersアクションから %>
+      <% if @users.any? %>
+        <div class="user_avatars">
+          <% @users.each do |user| %>
+            <%= link_to gravatar_for(user, size: 30), user %>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  </aside>
+
+  <%# 他フォローユーザー表示部分 %>
+  <div class="col-md-8">
+    <%# ＠titleはuser_controllerのfollowing,followersアクションから %>
+    <h3><%= @title %></h3>
+    <% if @users.any? %>
+      <ul class="users follow">
+        <%# 2 %>
+        <%= render @users %>
+      </ul>
+      <%# @userの引数省略 %>
+      <%= will_paginate %>
+    <% end %>
+  </div>
+
+</div>
+
+<%# 2 
+[_user.html.erb]を呼び出している。以下。
+render をパーシャル(ファイル名の文字列)に対してではなく、User クラスの user 変数に対して実行している点に注目
+してください*15。この場合、Rails は自動的に_user.html.erb という名前のパーシャルを探しにいくので、このパーシ
+ャルを作成する必要があります(リスト 10.51)。
+今度は render を@users 変数に対して直接実行します.
+Rails は@users を User オブジェクトのリストであると推測します。さらに、ユーザーのコレクションを与えて呼び出す
+と、Railsは自動的にユーザーのコレクションを列挙し、それぞれのユーザーを_user.html.erb パーシャルで出力します。
+これにより、リスト 10.52 のコードは極めてコンパクトになります。
+*railsはデフォでrenderの引数にモデルのインスタンス変数のコレクションを渡すと、一個一個取り出す。
+%>

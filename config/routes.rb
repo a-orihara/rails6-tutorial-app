@@ -14,13 +14,21 @@ Rails.application.routes.draw do
   get    '/login',   to: 'sessions#new'
   post   '/login',   to: 'sessions#create'
   delete '/logout',  to: 'sessions#destroy'
+  # 6
+  # resourcesがブロック付き引数を受け取っている
+  resources :users do
+    member do
+      get :following, :followers
+    end
+  end
   # 3
   resources :users
   # editのURL、アクション、対応する名前付きルートのみ作成(デフォは7つ)  
   # GET  /account_activation/トークン/edit  edit_account_activation_url(token)
   resources :account_activations, only: [:edit]
-  resources :password_resets, only: [:new, :create, :edit, :update]
-  resources :microposts, only: [:create, :destroy]
+  resources :password_resets,     only: [:new, :create, :edit, :update]
+  resources :microposts,          only: [:create, :destroy]
+  resources :relationships,       only: [:create, :destroy]
 end
 
 # =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
@@ -78,6 +86,9 @@ end
 # POST   /microposts    create   microposts_path
 # DELETE /microposts/1  destroy  micropost_path(micropost)
 
+# POST    /relationships(.:format)      create   relationships_path
+# DELETE  /relationships/:id(.:format)  destroy  relationship_path	
+
 # *Rails の REST 機能が有効になっていると、GET リクエストは自動的に show アクションとして扱われ ます。
 # 今回はジェネレータを使っていないので、show.html.erb ファイルを手動で作成する必要があります。
 # したがって、app/views/users/show.html.erb ファイルを手動で作成します。
@@ -101,4 +112,18 @@ end
 # したがって、 Microposts のリソースはこのようになります。その結果、この（13.30のコード）は、RESTfulな
 # ルーティングのサブセットになります。
 
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 6
+# 7つのアクション以外のアクションを追加する場合はルーティングの中でmemberとcollectionを使用します。
+# memberはidで指定した個々のリソースに対するアクションを定義できます。
+# /users/ユーザーのid/指定した名前
 
+# どちらもデータを表示するページなので、適切な HTTP メソッドは GET リクエストになります。したがって、get
+# メソッドを使って適切なレスポンスを返 すようにします。ちなみに、member メソッドを使うとユーザー id が含
+# まれている URL を扱うようになりますが、 id を指定せずにすべてのメンバーを表示するには、collectionメソッド
+# を使います。
+
+# ユーザー1のフォローユーザーの集合
+# GET  /users/1/following  following  following_user_path(1)
+# ユーザー1のフォロワーの集合
+# GET  /users/1/followers  followers  followers_user_path(1)

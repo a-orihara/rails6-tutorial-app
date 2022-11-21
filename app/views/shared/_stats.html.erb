@@ -1,0 +1,37 @@
+<%# フォロワーの統計情報を太字等で表示するパーシャル %>
+
+<%# 現在のユーザーを取得。@user が nil でない場合(つまりプロフィールページの場合)は何もせず、
+nil の場合(つまり Home ページの場合)には@userにcurrent_userを代入するコードです。
+必ず@userがある状態にする%>
+<% @user ||= current_user %>
+<div class="stats">
+
+  <%# /users/1/following %>
+  <a href="<%= following_user_path(@user) %>">
+    <%# 1 %>
+    <strong id="following" class="stat">
+      <%# フォローしているユーザーの人数を、次のように関連付けを使って計算 %>
+      <%= @user.following.count %>
+    </strong>
+    following
+  </a>
+
+  <%# /users/1/followers %>
+  <a href="<%= followers_user_path(@user) %>">
+    <strong id="followers" class="stat">
+      <%= @user.followers.count %>
+    </strong>
+    followers
+  </a>
+
+</div>
+
+<%# 1
+STRONGタブとはテキストの強調を表す際に使用するタグ。<strong>～</strong>で囲んだテキストを強調
+
+次のように CSS id を指定していることにもぜひ注目
+[id="following" class="stat"]
+こうしておくと、14.2.5 で Ajax を実装するときに便利です。そこでは、一意の id を指定してページ
+要素にアクセスしています。
+
+%>
