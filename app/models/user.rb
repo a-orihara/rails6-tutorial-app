@@ -22,6 +22,7 @@ class User < ApplicationRecord
   
   # 18 シンボルが引数だと、メソッド(active_relationships,followed)を呼び出している。
   # active_relationshipsは上で、followedは[models/relationship.rb]で定義されている
+  # has_manyでfollowing_idsも生成
   has_many :following, through: :active_relationships, source: :followed
   # 19
   has_many :followers, through: :passive_relationships, source: :follower
@@ -137,7 +138,15 @@ class User < ApplicationRecord
   # 現在ログインしているユーザーのマイクロポストをすべて取得
   def feed
     # user_idにはidが入る idはself.idの省略
-    Micropost.where("user_id = ?", id)
+    # ↓14章で下記に変更:Micropost.where("user_id = ?", id)
+    # ↓からのMicropost.where("user_id IN (?) OR user_id = ?", following_ids, id)
+    # ↓からのMicropost.where("user_id IN (:following_ids) OR user_id = :user_id",
+                    # following_ids: following_ids, user_id: id)
+    # 20
+    following_ids = "SELECT followed_id FROM relationships
+                    WHERE follower_id = :user_id"
+    Micropost.where("user_id IN (#{following_ids})
+                    OR user_id = :user_id", user_id: id)
   end
 
   # ユーザーをフォローする 
@@ -355,25 +364,68 @@ end
 
 # -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 16
-# すべてのユーザーがフィードを持つので、feed メソッドは User モデルで作るのが自然です。
+# @すべてのユーザーがフィードを持つので、feed メソッドは User モデルで作るのが自然です。
 # フィードの原型では、まずは現在ログインしているユーザーのマイクロポストをすべて取得してきます。
 
-# このwhereはsqlのwherenのようなもの。
+# @このwhereはsqlのwherenのようなもの。
 # whereメソッドとは、テーブル内の条件に一致したレコードを配列の形で取得することができるメソッドです。
 # モデル名.where("条件")
 
-# ?はプレースホルダーと呼ばれ、第二引数で指定した値が置き換えられます。
+# @?はプレースホルダーと呼ばれ、第二引数で指定した値が置き換えられます。
 # モデル名.where("name = ?", "pikawaka")
 # *↑上のコードは下記のコードと同じ
 # モデル名.where("name = 'pikawaka'")
 # モデル名.where(name: "pikawaka")
 
-# 疑問符があることで、SQL クエリに代入する前に id がエスケープされるため、SQL インジェクション(SQL Injection)
+# @疑問符があることで、SQL クエリに代入する前に id がエスケープされるため、SQL インジェクション(SQL Injection)
 # 呼ばれる深刻なセキュリティホールを避けることがで きます。この場合の id 属性は単なる整数(すなわち self.id は
 # ユーザーの id)である ため危険はありませんが、SQL 文に変数を代入する場合は常にエスケープする習慣をぜ ひ身
 # につけてください。
 # ＊SQLインジェクションとは、SQLを呼び出す際にセキュリティ上の不備を利用して、データベースのデータを不正に操作す
 # る攻撃方法のことを言います。
+
+# @sql
+# SELECT "フィールド(カラム)名"(全て取得)
+# FROM "テーブル名"
+# WHERE "フィールド名" IN ('値一', '値二', ...);
+# ↓
+# SELECT * FROM microposts
+# WHERE user_id IN (<list of ids>) OR user_id = <user id>
+# (<list of ids>):フォローしている他ユーザーのID
+
+# @14章より
+# ここで必要なのは、microposts テーブルから、あるユーザー(つまり自分自身)がフォローして いるユーザーに対応する id を持つマイクロポストをすべて選択(select)することです。 このクエリを模式的に書くと次のようになります。
+# [SELECT * FROM microposts]
+# [WHERE user_id IN (<list of ids>) OR user_id = <user id>]
+# 上のコードを書く際に、SQL が IN というキーワードをサポートしていることを前提にし ています(大丈夫、実際にサ
+# ポートされています)。このキーワードを使うことで、id の 集合の内包(set inclusion)に対してテストを行えます。
+# 上のような選択を行うために Active Record の where メ ソッドを使っていることを思い出してください(リスト
+# 13.46)。今回必要になる選択は、上よりも少し複雑で、例えば次のような形になります。
+# [Micropost.where("user_id IN (?) OR user_id = ?", following_ids, id)]
+# これらの条件から、フォローされているユーザーに対応する id の配列が必要であること がわかってきました。これを
+# 行う方法の 1 つは、Ruby の map メソッドを使うことです。 このメソッドはすべての「列挙可能(enumerable)」な
+# オブジェクト(配列やハッシュな ど、要素の集合で構成されるあらゆるオブジェクト)で使えます。
+# 列挙可能(enumerable)オブジェクトであることの主な条件は、each メソッドを実装していることです。このメソッド
+# はコレクションを列挙します。
+# よく使われる方法であり、次のようにアンパサンド(Ampersand)& と、メソッドに対応 するシンボルを使った短縮
+# 表記(4.3.2)が使えます。この短縮表記であれば、変数 i を使 わずに済みます。
+# [ [1, 2, 3, 4].map(&:to_s)
+# => ["1", "2", "3", "4"]]
+# この結果に対して join メソッド(4.3.1)を使うと、id の集合をカンマ区切りの文字列と して繋げることができます。
+# user.following にある各要素の id を呼び出し、フォローして いるユーザーの id を配列として扱うことができま
+# す。例えばデータベースの最初のユー ザーに対して実行すると、次のような結果になります。
+# [User.first.following.map(&:id)
+#   => [3, 4, 5, 6, 7, 8, 9, 10]]
+# 実際、この手法は実に便利なので、Active Record ではfollowing_idsメソッドも用意されています
+# この following_ids メソッドは、has_many :following の関連付けをしたときに Active Record が自動生成し
+# たものです(リスト 14.8)。これにより、user.following コレクションに対応する id を得るためには、関連付けの
+# 名前の末尾に_ids を付け足すだ けで済みます。
+# 結果として、フォローしているユーザー id の文字列は、次のようにして取 得することができます。
+# [User.first.following_ids.join(', ')
+# => "3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13"]
+# なお、以上は説明のためのコードであり、実際に SQL 文字列に挿入するときは、この ように記述する必要はありません。実は、?を内挿すると自動的にこの辺りの面倒を見て くれます。さらに、データベースに依存する一部の非互換性まで解消してくれます。つま り、ここでは following_ids メソッドをそのまま使えばよいだけなのです。結果、最初 に想像していたとおり、
+# [Micropost.where("user_id IN (?) OR user_id = ?", following_ids, id)]
+# *?には後続の引数が入る。idはself.idの省略
 
 # -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
 # 17
@@ -443,3 +495,30 @@ end
 # これは:followers 属性の場合、Rails が「followers」を単数形にして自動的に外部キーfollower_id を探して
 # くれるからです。リスト 14.12 と違って必要のない:source キー をそのまま残しているのは、
 # has_many :followingとの類似性を強調させるためです。
+
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -
+# 20
+# ↓following_idsで一回、合計で2回問い合わせをしている
+# Micropost.where("user_id IN (:following_ids) OR user_id = :user_id",
+                    # following_ids: following_ids, user_id: id)
+
+# サブセレクト(SQLの手法,SELECT文の中にSELECT文を入れる)で一つのクエリにまとめる
+
+# 前者の疑問符を使った文法も便利ですが、同じ変数を複数の場所に挿入したい場合は、後者の置き換え後の文法を使う
+# 方がより便利です。これから SQL クエリにもう 1 つの user_id を追加しま す。特に、次のRuby コードは、
+# [following_ids]
+# このような SQL に置き換えることができます。
+# [following_ids = "SELECT followed_id FROM relationships WHERE follower_id = :user_id"]
+# このコードを SQL のサブセレクトとして使います。つまり、「ユーザー 1 がフォローして いるユーザーすべてを選択
+# する」という SQL を既存の SQL に内包させる形になり、結果 として SQL は次のようになります。
+# SELECT * FROM microposts
+# WHERE user_id IN (SELECT followed_id FROM relationships
+#                   WHERE follower_id = 1) 
+#       OR user_id = 1
+# このサブセレクトは集合のロジックを(Rails ではなく)データベース内に保存するので、 より効率的にデータ
+# を取得することができます。
+# もちろん、サブセレクトを使えばいくらでもスケールできるなどということはありませ ん。大規模な Web サービス
+# では、バックグラウンド処理を使ってフィードを非同期で生 成するなどのさらなる改善が必要でしょう。ただし、
+# Web サービスをスケールさせる技術 は非常に高度かつデリケートな問題なので、本書ではここまでの改善で止めてお
+# きます。
+# -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -

@@ -3,7 +3,7 @@ POST リクエストを Relationshipsコントローラに送信してリレー�
 <%# [_follow_form.html.erb]により、ログインユーザー(current_user)がある時しか、このパーシャルは表示されない%>
 
 <%# 1 %>
-<%= form_with(model: current_user.active_relationships.build, local: true) do |f| %>
+<%= form_with(model: current_user.active_relationships.build, remote: true) do |f| %>
   <%# この:followed_idがcreateアクションに送られる %>
   <%# 2 %>
   <div><%= hidden_field_tag :followed_id, @user.id %></div>
@@ -36,6 +36,25 @@ hidden_field_tag:ユーザーに隠されて送信されるデータ
 [input id="followed_id" name="followed_id" type="hidden" value="3"]
 12.3 のリスト 12.14 で見たように、隠しフィールドの input タグを使うことで、ブラウ ザ上に表示させずに適
 切な情報を含めることができます。
+
+Ajax
+デフォはremote: true。jsが動くように設定。local: trueは使わないように設定
+
+Relationships コントローラの create アクションと destroy アクションを単に元のその他ユーザーのプロフィールにリダイレクト
+していました。つまり、ユーザーはプロフィールページを最初に表示し、それ からユーザーをフォローし、その後すぐ元
+のページにリダイレクトされるという流れにな ります。ユーザーをフォローした後、本当にそのページから離れて元の
+ページに戻らない といけないのでしょうか。この点を考えなおしてみましょう。
+これは Ajax を使うことで解決できます。Ajax を使えば、Web ページからサーバーに 「非同期」で、ページを移動す
+ることなくリクエストを送信することができます。Web フォームに Ajax を採用するのは今や当たり前になりつつ
+あるので、Rails でも Ajax を簡 単に実装できるようになっています。フォロー用とフォロー解除用のパーシャルを
+これに沿って更新するのは簡単です。次のように置き換えるだけです。たったこれだけで、Rails は自動的に Ajaxを
+使うようになります。 
+[form_with(model: ..., remote: true)]
+ERb によって実際に生成される HTMLをお見せします。
+[form action="/relationships/117" class="edit_relationship" data-remote="true" id="edit_relationship_117" method="post"]
+form タグの内部で data-remote="true"を設定しています。これは、Java- Script によるフォーム操作を許可する
+ことを Rails に知らせるためのものです。現在の Rails では HTML プロパティを使って簡単に Ajax が扱えるように
+なっています。これは、JavaScript を前面に出すべからずという哲学に従っています。
 %>
 
 <%# 2
