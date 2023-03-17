@@ -16,7 +16,7 @@ module Rails6TutorialApp
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
 
-    # JSがブラウザで無効になっていた場合の設定。
+    # JSがブラウザで無効になっていた場合の設定。サンプルappでは特にやらなくてもいい
     # 認証トークンを remote フォームに埋め込む
     config.action_view.embed_authenticity_token_in_remote_forms = true
   end
